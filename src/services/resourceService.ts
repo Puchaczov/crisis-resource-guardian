@@ -584,3 +584,9 @@ export const getResourceStats = async () => {
     }
   });
 };
+
+export const commune: {
+  name: string;
+} = {
+  name: 'Warszawa'
+}

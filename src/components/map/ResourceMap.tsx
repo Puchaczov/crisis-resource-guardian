@@ -18,6 +18,7 @@ import 'leaflet/dist/leaflet.css';
 import shp, { parseShp, parseDbf, combine } from 'shpjs';
 import { reproject } from 'reproject';
 import proj4 from 'proj4';
+import { useSearchParams } from 'react-router-dom'; // Import useSearchParams
 
 // Define EPSG:2180 (PUWG 1992 / Poland CS92) for proj4
 proj4.defs('EPSG:2180', '+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
@@ -85,10 +86,14 @@ const ResourceMap: React.FC = () => {
   const [resources, setResources] = useState<(Resource & { communeName?: string })[]>([]);
   const [filteredResources, setFilteredResources] = useState<(Resource & { communeName?: string })[]>([]);
   const [selectedResource, setSelectedResource] = useState<(Resource & { communeName?: string }) | null>(null);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<string>('all');
-  const [status, setStatus] = useState<string>('all');
-  const [organization, setOrganization] = useState<string>('all');
+  
+  const [searchParams, setSearchParams] = useSearchParams(); // Initialize useSearchParams
+
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [status, setStatus] = useState(searchParams.get('status') || 'all');
+  const [organization, setOrganization] = useState(searchParams.get('organization') || 'all');
+
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
   const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]); 
@@ -100,6 +105,17 @@ const ResourceMap: React.FC = () => {
       try {
         setIsLoading(true);
         const resourceData = await getAllResources();
+
+        // Read initial filters from URL
+        const urlSearch = searchParams.get('search');
+        const urlCategory = searchParams.get('category');
+        const urlStatus = searchParams.get('status');
+        const urlOrganization = searchParams.get('organization');
+
+        if (urlSearch) setSearch(urlSearch);
+        if (urlCategory) setCategory(urlCategory);
+        if (urlStatus) setStatus(urlStatus);
+        if (urlOrganization) setOrganization(urlOrganization);
 
         if (resourceData.length > 0) {
           const locationsForAnnotation = resourceData.map(r => ({ 
@@ -247,6 +263,16 @@ const ResourceMap: React.FC = () => {
 
     updateCommuneLayers();
   }, [filteredResources, isLoading]);
+
+  // Effect for updating URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (category !== 'all') params.set('category', category);
+    if (status !== 'all') params.set('status', status);
+    if (organization !== 'all') params.set('organization', organization);
+    setSearchParams(params, { replace: true });
+  }, [search, category, status, organization, setSearchParams]);
 
   useEffect(() => {
     setFilteredResources(resources.filter((resource) => {

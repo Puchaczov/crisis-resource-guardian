@@ -12,6 +12,8 @@ import ResourcesPage from "@/pages/ResourcesPage";
 import AddResourcePage from "@/pages/AddResourcePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import IntegrationsPage from "@/pages/IntegrationsPage";
+import EmergencyActionsPage from "@/pages/EmergencyActionsPage";
+import AlertsPage from "@/pages/AlertsPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
               <Route path="/settings" element={<div className="p-4">Ustawienia - strona w budowie</div>} />
               <Route path="/users" element={<div className="p-4">Użytkownicy - strona w budowie</div>} />
               <Route path="/integrations" element={<IntegrationsPage />} />
+              <Route path="/emergency-actions" element={<EmergencyActionsPage />} />
+              <Route path="/alerts" element={<AlertsPage />} />
             </Route>
             
             {/* 404 catch-all route */}

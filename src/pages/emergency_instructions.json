@@ -1,0 +1,187 @@
+{
+  "emergencies": [
+    {
+      "emergency_type": "flood",
+      "emergency_type_name": "Powódź",
+      "emergency_actions": [
+        {
+          "action_id": 1,
+          "name": "Zarządzenie ewakuacji obszarów zalewowych",
+          "instructions": {
+            "description": "Zainicjuj formalną ewakuację mieszkańców z terenów zagrożonych powodzią, zgodnie z obowiązującymi procedurami gminnymi.",
+            "details": [
+              "Na podstawie prognoz IMGW oraz map ryzyka powodziowego, zidentyfikuj rejony wymagające ewakuacji.",
+              "Zwołaj posiedzenie gminnego zespołu zarządzania kryzysowego i podejmij uchwałę o ewakuacji zgodnie z art. 18 ust. 1 Ustawy o zarządzaniu kryzysowym.",
+              "Skontaktuj się z lokalną Policją, OSP, ZGK i zarządem transportu w celu przydzielenia zadań operacyjnych.",
+              "Wydaj komunikat ewakuacyjny do mieszkańców za pośrednictwem oficjalnych kanałów: lokalne media, SMS, aplikacja RSO, systemy syren.",
+              "Zabezpiecz logistykę transportową oraz punkty recepcyjne i noclegowe (np. szkoły, hale sportowe)."
+            ],
+            "legal_reference": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20070740493",
+            "legal_reference_name": "Ustawa o zarządzaniu kryzysowym"
+          },
+          "how_to_do": [
+            "Opracuj i zatwierdź listę obszarów ewakuacyjnych z podziałem na sektory.",
+            "Deleguj koordynatorów sektorów odpowiedzialnych za komunikację z mieszkańcami i nadzór nad transportem.",
+            "Monitoruj postęp ewakuacji przez centralę LZK w czasie rzeczywistym — korzystaj z raportów od służb terenowych."
+          ],
+          "verification": {
+            "criteria": [
+              "Potwierdzono opuszczenie obszarów zalewowych przez co najmniej 95% mieszkańców.",
+              "Punkty recepcyjne przyjęły zgłoszoną liczbę osób.",
+              "Transport przebiegał bez incydentów – brak zgłoszeń opóźnień lub osób pozostawionych bez wsparcia."
+            ],
+            "verification_method": "Codzienna analiza raportów terenowych, list ewakuacyjnych oraz danych z punktów przyjęcia."
+          },
+          "resources_required": [
+            {
+              "resource_name": "Pojazdy transportu zbiorowego (autobusy, busy)",
+              "quantity_needed": 15,
+              "resource_type": "Transport"
+            },
+            {
+              "resource_name": "Personel OSP i Policji",
+              "quantity_needed": 40,
+              "resource_type": "Zasoby ludzkie"
+            },
+            {
+              "resource_name": "Tymczasowe miejsca zakwaterowania",
+              "quantity_needed": 5,
+              "resource_type": "Infrastruktura"
+            }
+          ]
+        },
+        {
+          "action_id": 2,
+          "name": "Uruchomienie gminnego centrum zarządzania kryzysowego (GCZK)",
+          "instructions": {
+            "description": "Zapewnij ciągłość działania GCZK w trybie 24/7 w celu koordynacji wszystkich działań operacyjnych związanych z powodzią.",
+            "details": [
+              "Zarządź przejście GCZK w tryb operacyjny – wyznacz dyżury przedstawicieli kluczowych służb (ZGK, OSP, Policja, OPS).",
+              "Zabezpiecz łączność zapasową (radiotelefony, telefony satelitarne, dostęp do SWD RCB).",
+              "Utwórz rejestr działań oraz dziennik zmian w systemie zarządzania (np. aplikacja LOG24).",
+              "Wydawaj i archiwizuj wszystkie decyzje operacyjne oraz komunikaty do społeczeństwa i władz wyższego szczebla.",
+              "Koordynuj przepływ informacji z jednostkami terenowymi i urzędami powiatowymi/wojewódzkimi."
+            ],
+            "legal_reference": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20070740493",
+            "legal_reference_name": "Ustawa o zarządzaniu kryzysowym"
+          },
+          "how_to_do": [
+            "Zorganizuj salę GCZK z dostępem do internetu, drukarek, źródła awaryjnego zasilania.",
+            "Przydziel operatorów do monitorowania prognoz IMGW oraz statusów akcji terenowych.",
+            "Wyznacz jedną osobę odpowiedzialną za oficjalną komunikację (rzecznik GCZK)."
+          ],
+          "verification": {
+            "criteria": [
+              "GCZK działa nieprzerwanie przez cały okres trwania zagrożenia.",
+              "Wszystkie działania operacyjne są rejestrowane i archiwizowane.",
+              "GCZK skutecznie integruje raporty ze wszystkich podległych służb co 6 godzin."
+            ],
+            "verification_method": "Kontrola dzienników operacyjnych, obecności dyżurnych oraz raportów przesyłanych do WZK/RCB."
+          },
+          "resources_required": [
+            {
+              "resource_name": "Stanowiska komputerowe z łącznością",
+              "quantity_needed": 6,
+              "resource_type": "Technologia"
+            },
+            {
+              "resource_name": "Zapasowy agregat prądotwórczy",
+              "quantity_needed": 1,
+              "resource_type": "Sprzęt awaryjny"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "emergency_type": "chemical_spill",
+      "emergency_type_name": "Wyciek substancji chemicznych",
+      "emergency_actions": [
+        {
+          "action_id": 1,
+          "name": "Zabezpieczenie miejsca wycieku substancji chemicznych",
+          "instructions": {
+            "description": "Natychmiastowo podjąć działania w celu zabezpieczenia obszaru wycieku chemikaliów i minimalizacji ryzyka dalszego rozprzestrzeniania się substancji.",
+            "details": [
+              "Ustal strefy zagrożenia i wyznacz strefy zamknięte wokół miejsca wycieku.",
+              "Skontaktuj się z zespołem ratunkowym oraz odpowiednimi służbami porządkowymi.",
+              "Upewnij się, że wszystkie osoby w pobliżu są ewakuowane w bezpieczne miejsca.",
+              "Zapewnij dostęp do niezbędnych środków ochrony osobistej dla służb ratunkowych.",
+              "Zastosuj środki neutralizujące, jeśli to konieczne, aby ograniczyć dalsze skutki wycieku."
+            ],
+            "legal_reference": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20120001038",
+            "legal_reference_name": "Ustawa o substancjach chemicznych i ich mieszaninach"
+          },
+          "how_to_do": [
+            "Skontaktuj się z firmami zajmującymi się usuwaniem niebezpiecznych substancji chemicznych, aby uzyskać wsparcie techniczne.",
+            "Wyznacz strefy ochronne w promieniu co najmniej 500 metrów od wycieku.",
+            "Monitoruj poziom toksyczności powietrza i wody w rejonie wycieku."
+          ],
+          "verification": {
+            "criteria": [
+              "Miejsce wycieku zostało skutecznie zamknięte i zabezpieczone.",
+              "Wszystkie osoby znajdujące się w rejonie zostały bezpiecznie ewakuowane.",
+              "Substancje chemiczne zostały zneutralizowane lub odizolowane w sposób zgodny z procedurami."
+            ],
+            "verification_method": "Raporty od służb ratunkowych, wyniki testów jakości powietrza i wody."
+          },
+          "resources_required": [
+            {
+              "resource_name": "Środki ochrony osobistej (kombinezony, maski)",
+              "quantity_needed": 50,
+              "resource_type": "Sprzęt ochronny"
+            },
+            {
+              "resource_name": "Zespoły ratunkowe z odpowiednim sprzętem do neutralizacji substancji chemicznych",
+              "quantity_needed": 10,
+              "resource_type": "Zasoby ludzkie"
+            },
+            {
+              "resource_name": "Pojazdy transportu ratunkowego",
+              "quantity_needed": 5,
+              "resource_type": "Transport"
+            }
+          ]
+        },
+        {
+          "action_id": 2,
+          "name": "Ewakuacja i zabezpieczenie dostępu do wody pitnej",
+          "instructions": {
+            "description": "Zorganizuj ewakuację i zapewnienie dostępu do alternatywnych źródeł wody pitnej dla mieszkańców obszaru zagrożonego wyciekiem chemikaliów.",
+            "details": [
+              "Przekaż komunikat do mieszkańców o konieczności ewakuacji i zabezpieczeniu alternatywnego źródła wody pitnej.",
+              "Przygotuj i udostępnij wodę pitną w punktach ewakuacyjnych.",
+              "Skontaktuj się z firmą wodociągową w celu zapewnienia alternatywnego źródła wody."
+            ],
+            "legal_reference": "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20030750361",
+            "legal_reference_name": "Ustawa o zaopatrzeniu w wodę"
+          },
+          "how_to_do": [
+            "Zorganizuj transport wody pitnej do punktów ewakuacyjnych.",
+            "Wyznacz specjalistyczne punkty dostępu do wody dla osób poszkodowanych.",
+            "Skontaktuj się z zarządem wodociągów w celu koordynacji działań."
+          ],
+          "verification": {
+            "criteria": [
+              "Wszystkie punkty ewakuacyjne otrzymały wodę pitną.",
+              "Ewakuacja odbyła się bez opóźnień, a osoby otrzymały informacje na czas."
+            ],
+            "verification_method": "Analiza raportów terenowych, audyt punktów ewakuacyjnych."
+          },
+          "resources_required": [
+            {
+              "resource_name": "Pojazdy transportowe do dostarczania wody",
+              "quantity_needed": 6,
+              "resource_type": "Transport"
+            },
+            {
+              "resource_name": "Punkty dystrybucji wody",
+              "quantity_needed": 5,
+              "resource_type": "Infrastruktura"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,67 +1,100 @@
-
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getAllResources, getResourcesByCategory, getResourcesByStatus } from '@/services/resourceService';
-import { Resource, ResourceCategory, ResourceStatus } from '@/types/resources';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, Battery, CheckCircle } from "lucide-react";
+import { getResourceStats } from '@/services/resourceService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+interface ResourceStats {
+  foodSupply: {
+    ownResources: number;
+    privateResources: number;
+    requiredDays: number;
+  };
+  hospitalBeds: {
+    total: number;
+    available: number;
+    bedsPerTenThousand: number;
+    availabilityPercentage: number;
+  };
+}
+
+const getAvailabilityColor = (percentage: number): string => {
+  const normalized = percentage / 100;
+  const red = normalized < 0.5 ? 255 : Math.round(255 * (1 - normalized) * 2);
+  const green = normalized > 0.5 ? 255 : Math.round(255 * normalized * 2);
+  return `rgb(${red}, ${green}, 0)`;
+};
+
+const getResourceColor = (days: number, requiredDays: number): string => {
+  if (days >= requiredDays) {
+    return 'bg-green-500';
+  }
+  return 'bg-red-500';
+};
 
 const ResourceSummary: React.FC = () => {
-  const [totalResources, setTotalResources] = useState(0);
-  const [availableResources, setAvailableResources] = useState(0);
-  const [unavailableResources, setUnavailableResources] = useState(0);
-  const [criticalResources, setCriticalResources] = useState<Resource[]>([]);
+  const [stats, setStats] = useState<ResourceStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    let mounted = true;
+
+    const fetchStats = async () => {
       try {
         setIsLoading(true);
-        
-        // Fetch all resources
-        const allResources = await getAllResources();
-        setTotalResources(allResources.length);
-        
-        // Fetch available resources
-        const available = await getResourcesByStatus('available');
-        setAvailableResources(available.length);
-        
-        // Fetch unavailable resources
-        const unavailable = await getResourcesByStatus('unavailable');
-        setUnavailableResources(unavailable.length);
-        
-        // Find critical resources (unavailable or with low battery/fuel)
-        const critical = allResources.filter(resource => {
-          if (resource.status === 'unavailable') return true;
-          
-          if (resource.telemetry) {
-            if (
-              (resource.telemetry.battery !== undefined && resource.telemetry.battery < 20) ||
-              (resource.telemetry.fuel !== undefined && resource.telemetry.fuel < 20)
-            ) {
-              return true;
-            }
-          }
-          
-          return false;
-        });
-        
-        setCriticalResources(critical);
+        const resourceStats = await getResourceStats();
+        if (mounted) {
+          console.log('Initial stats fetched:', resourceStats);
+          setStats(resourceStats);
+        }
       } catch (error) {
-        console.error("Error fetching resource summary:", error);
+        console.error("Error fetching resource statistics:", error);
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchData();
+    fetchStats();
+
+    const updateInterval = setInterval(() => {
+      setStats(prevStats => {
+        if (!prevStats) return prevStats;
+
+        const randomChange = (value: number, maxChange: number, shouldRound = false) => {
+          const change = (Math.random() - 0.5) * maxChange;
+          const newValue = Math.max(0, value + change);
+          return shouldRound ? Math.round(newValue) : Number(newValue.toFixed(1));
+        };
+
+        const newStats = {
+          foodSupply: {
+            ...prevStats.foodSupply,
+            // Increased to 2.0 to guarantee more frequent integer changes
+            ownResources: randomChange(prevStats.foodSupply.ownResources, 2.0, true),
+            privateResources: randomChange(prevStats.foodSupply.privateResources, 2.0, true),
+          },
+          hospitalBeds: {
+            ...prevStats.hospitalBeds,
+            // Increased to 20 for more noticeable changes
+            available: Math.round(randomChange(prevStats.hospitalBeds.available, 20, true)),
+          }
+        };
+
+        // Calculate derived values
+        newStats.hospitalBeds.availabilityPercentage = 
+          Math.round((newStats.hospitalBeds.available / newStats.hospitalBeds.total) * 100);
+        newStats.hospitalBeds.bedsPerTenThousand = 
+          Number(((newStats.hospitalBeds.available / 1000000) * 10000).toFixed(1));
+
+        console.log('Stats updated:', newStats);
+        return newStats;
+      });
+    }, 5000); // Reduced to 5 seconds for easier testing
+
+    return () => {
+      mounted = false;
+      clearInterval(updateInterval);
+    };
   }, []);
-  
-  const availabilityPercentage = totalResources > 0 
-    ? Math.round((availableResources / totalResources) * 100) 
-    : 0;
-    
+
   return (
     <div className="space-y-6">
       {isLoading ? (
@@ -69,137 +102,95 @@ const ResourceSummary: React.FC = () => {
           <p>Ładowanie danych...</p>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        stats && (
+          <>
+            {/* Food Supply Card */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl">Całkowita liczba zasobów</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold">{totalResources}</div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Wszystkie zasoby w systemie
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl">Dostępność zasobów</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end gap-2">
-                  <div className="text-4xl font-bold">{availableResources}</div>
-                  <div className="text-xl text-muted-foreground mb-1">/ {totalResources}</div>
-                </div>
-                <div className="mt-2 space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Dostępne</span>
-                    <span>{availabilityPercentage}%</span>
-                  </div>
-                  <Progress value={availabilityPercentage} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className={unavailableResources > 0 ? "border-emergency/50" : ""}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl flex items-center">
-                  {unavailableResources > 0 && (
-                    <AlertTriangle className="h-5 w-5 text-emergency mr-2" />
-                  )}
-                  Zasoby wymagające uwagi
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold">
-                  {unavailableResources}
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Zasoby niedostępne lub wymagające interwencji
-                </p>
-              </CardContent>
-              {unavailableResources > 0 && (
-                <CardFooter className="pt-0">
-                  <Link to="/resources" className="text-emergency hover:underline text-sm">
-                    Zobacz zasoby wymagające uwagi
-                  </Link>
-                </CardFooter>
-              )}
-            </Card>
-          </div>
-          
-          {criticalResources.length > 0 && (
-            <Card className="border-emergency/50">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <AlertTriangle className="h-5 w-5 text-emergency mr-2" />
-                  Zasoby w stanie krytycznym
-                </CardTitle>
-                <CardDescription>
-                  Te zasoby wymagają natychmiastowej uwagi
-                </CardDescription>
+                <CardTitle className="text-xl">Zapas żywności</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {criticalResources.slice(0, 5).map((resource) => (
-                    <div key={resource.id} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className={resource.status === 'unavailable' ? 'emergency-status-indicator' : 'status-indicator status-indicator-warning'}></div>
-                        <div>
-                          <p className="font-medium">{resource.name}</p>
-                          <p className="text-sm text-muted-foreground">{resource.location.name}</p>
-                        </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Liczba dni zapasu żywności (wymagane minimum: {stats.foodSupply.requiredDays} dni)
+                    </p>
+                    <div className="relative w-full h-8 bg-gray-200 rounded">
+                      <div
+                        className={`absolute top-0 left-0 h-8 rounded-l transition-all duration-300 ${getResourceColor(stats.foodSupply.ownResources, stats.foodSupply.requiredDays)}`}
+                        style={{
+                          width: `${(stats.foodSupply.ownResources / Math.max(stats.foodSupply.ownResources + stats.foodSupply.privateResources, 30)) * 100}%`,
+                        }}
+                      >
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-sm">
+                          {stats.foodSupply.ownResources} dni
+                        </span>
                       </div>
-                      
-                      <div className="flex items-center">
-                        {resource.status === 'unavailable' && (
-                          <span className="text-xs text-emergency mr-4">Niedostępny</span>
-                        )}
-                        
-                        {resource.telemetry?.battery !== undefined && resource.telemetry.battery < 20 && (
-                          <div className="flex items-center text-xs text-warning mr-4">
-                            <Battery className="h-3 w-3 mr-1" />
-                            <span>{resource.telemetry.battery}%</span>
-                          </div>
-                        )}
-                        
-                        <Link 
-                          to={`/resources/${resource.id}`}
-                          className="text-xs underline hover:text-primary"
-                        >
-                          Szczegóły
-                        </Link>
+                      <div
+                        className="absolute top-0 h-8 bg-purple-500 rounded-r"
+                        style={{
+                          left: `${(stats.foodSupply.ownResources / Math.max(stats.foodSupply.ownResources + stats.foodSupply.privateResources, 30)) * 100}%`,
+                          width: `${(stats.foodSupply.privateResources / Math.max(stats.foodSupply.ownResources + stats.foodSupply.privateResources, 30)) * 100}%`,
+                        }}
+                      >
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-sm">
+                          +{stats.foodSupply.privateResources} dni
+                        </span>
+                      </div>
+                      <div 
+                        className="absolute top-0 h-8 border-l-2 border-yellow-400"
+                        style={{
+                          left: `${(stats.foodSupply.requiredDays / Math.max(stats.foodSupply.ownResources + stats.foodSupply.privateResources, 30)) * 100}%`,
+                        }}
+                      >
+                        <span className="absolute bottom-[-24px] -translate-x-1/2 text-xs text-yellow-600 whitespace-nowrap">
+                          Wymagane
+                        </span>
                       </div>
                     </div>
-                  ))}
-                  
-                  {criticalResources.length > 5 && (
-                    <div className="text-center pt-2">
-                      <Link to="/resources" className="text-sm text-muted-foreground hover:text-primary">
-                        + {criticalResources.length - 5} więcej zasobów
-                      </Link>
+                    <div className="flex flex-col text-sm mt-2 gap-1">
+                      <span>
+                        Zasoby własne: {stats.foodSupply.ownResources} dni 
+                        {stats.foodSupply.ownResources >= stats.foodSupply.requiredDays ? '✓' : '⚠️'}
+                      </span>
+                      <span>Zasoby prywatne: {stats.foodSupply.privateResources} dni</span>
                     </div>
-                  )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
-          
-          {criticalResources.length === 0 && (
-            <Card className="border-green-500/30 bg-green-50/30">
+
+            {/* Hospital Beds Card */}
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  Wszystkie zasoby w dobrym stanie
-                </CardTitle>
+                <CardTitle className="text-xl">Dostępność łóżek szpitalnych</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Nie wykryto zasobów w stanie krytycznym.</p>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Dostępne łóżka</p>
+                    <div className="relative w-full h-8 bg-gray-200 rounded">
+                      <div
+                        className="absolute top-0 left-0 h-8 rounded transition-all duration-300"
+                        style={{
+                          width: `${stats.hospitalBeds.availabilityPercentage}%`,
+                          backgroundColor: getAvailabilityColor(stats.hospitalBeds.availabilityPercentage),
+                        }}
+                      >
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-sm">
+                          {stats.hospitalBeds.available} z {stats.hospitalBeds.total} łóżek
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {stats.hospitalBeds.bedsPerTenThousand} dostępnych łóżek na 10 000 mieszkańców
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          )}
-        </>
+          </>
+        )
       )}
     </div>
   );

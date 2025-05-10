@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getAllResources } from '@/services/resourceService';
-import { Resource, ResourceCategory, ResourceStatus } from '@/types/resources';
+import { Resource, ResourceStatus } from '@/types/resources';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { resourceCategories, resourceStatuses, resourceOrganizations } from '@/services/resourceService';
 import ResourceMarkerPopup from './ResourceMarkerPopup';
 import { Map as MapIcon, Search } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import shp from 'shpjs';
 
 // Custom icon for markers
 const getStatusIcon = (status: ResourceStatus) => {
@@ -65,27 +67,41 @@ const ResourceMap: React.FC = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
-  const [search, setSearch] = useState('');  const [category, setCategory] = useState<string>('all');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
   const [organization, setOrganization] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
+  const [shapefileData, setShapefileData] = useState<any>(null); // State for GeoJSON data
+  const mapRef = useRef<L.Map | null>(null); // Ref to access map instance
 
   useEffect(() => {
-    const fetchResources = async () => {
+    const fetchResourcesAndShapefile = async () => {
       try {
         setIsLoading(true);
         const data = await getAllResources();
         setResources(data);
         setFilteredResources(data);
+
+        // Fetch and parse the shapefile
+        // Ensure the path to the zip file in the public folder is correct.
+        const response = await fetch('/wojewodztwa.zip'); 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status} for /wojewodztwa.zip`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const geojson = await shp(arrayBuffer); // Corrected line
+        setShapefileData(geojson);
+
       } catch (error) {
-        console.error("Error fetching resources:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchResources();
+    fetchResourcesAndShapefile();
   }, []);
 
   useEffect(() => {
@@ -247,11 +263,34 @@ const ResourceMap: React.FC = () => {
                     <p>Ładowanie mapy...</p>
                   </div>
                 ) : (
-                  <MapContainer center={[52.2297, 21.0122]} zoom={13} scrollWheelZoom={true} className="h-full w-full rounded-lg">
+                  <MapContainer 
+                    center={[52.2297, 21.0122]} 
+                    zoom={6} // Adjusted zoom to better see the whole region initially
+                    scrollWheelZoom={true} 
+                    className="h-full w-full rounded-lg"
+                    whenReady={() => { /* mapInstance is implicitly available via useMap hook or mapRef.current if needed after initial render */ }}
+                  >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
+                    {shapefileData && (
+                      <GeoJSON 
+                        data={shapefileData} 
+                        style={() => ({
+                          color: "#4A83EC", // Example style, customize as needed
+                          weight: 2,
+                          opacity: 1,
+                          fillOpacity: 0.3
+                        })}
+                        onEachFeature={(feature, layer) => {
+                          // Adjust property name based on your shapefile's attributes
+                          if (feature.properties && feature.properties.JPT_NAZWA_ ) { 
+                            layer.bindPopup(feature.properties.JPT_NAZWA_);
+                          }
+                        }}
+                      />
+                    )}
                     {filteredResources.map(resource => (
                       <Marker 
                         key={resource.id} 

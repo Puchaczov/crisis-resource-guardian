@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getAllResources, getStatusLabel } from '@/services/resourceService';
 import { Resource } from '@/types/resources';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const ResourceStatusChart: React.FC = () => {
   const [resources, setResources] = useState<Resource[]>([]);

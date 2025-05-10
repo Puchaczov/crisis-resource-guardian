@@ -79,11 +79,19 @@ const AddResourceForm: React.FC = () => {
     try {
       setIsSubmitting(true);
       
+      // Make sure category is not an empty string when submitting
+      if (formData.category === '') {
+        toast.error("Wybierz kategorię zasobu");
+        return;
+      }
+      
       // Use the logged in user's organization or the selected one
       const resourceData = {
         ...formData,
         organization: formData.organization || organization,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        // Ensure category is a valid ResourceCategory
+        category: formData.category as ResourceCategory
       };
       
       const newResource = await addResource(resourceData);

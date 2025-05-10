@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { getAllResources } from '@/services/resourceService';
 import { Resource, ResourceCategory, ResourceStatus } from '@/types/resources';
@@ -11,42 +10,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { resourceCategories, resourceStatuses, resourceOrganizations } from '@/services/resourceService';
 import ResourceMarkerPopup from './ResourceMarkerPopup';
 import { Map as MapIcon, Search } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 
-// Mock component since we can't use actual Google Maps in this environment
-const MockMap: React.FC<{
-  resources: Resource[];
-  selectedResource: Resource | null;
-  onSelectResource: (resource: Resource | null) => void;
-}> = ({ resources, selectedResource, onSelectResource }) => {
-  return (
-    <div className="h-full w-full bg-gray-100 relative overflow-hidden rounded-lg">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-gray-400 flex flex-col items-center">
-          <MapIcon size={48} />
-          <p className="mt-2">Mapa zasobów</p>
-          <p className="text-sm">(Interaktywna mapa będzie dostępna w środowisku Google Maps API)</p>
-        </div>
-      </div>
-      
-      {/* Mock map pins for resources */}
-      <div className="absolute inset-0 p-4">
-        <div className="flex flex-wrap gap-2">
-          {resources.map((resource) => (
-            <Button
-              key={resource.id}
-              variant={selectedResource?.id === resource.id ? "default" : "outline"}
-              size="sm"
-              className="text-xs"
-              onClick={() => onSelectResource(resource)}
-            >
-              <span className={`status-indicator ${getStatusClass(resource.status)} mr-1`}></span>
-              {resource.name}
-            </Button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+// Custom icon for markers
+const getStatusIcon = (status: ResourceStatus) => {
+  let iconUrl = '/placeholder.svg'; // Default icon
+  let iconColor = 'gray';
+
+  switch (status) {
+    case 'available':
+      iconColor = 'green';
+      break;
+    case 'reserved':
+      iconColor = 'orange';
+      break;
+    case 'unavailable':
+      iconColor = 'red';
+      break;
+    case 'maintenance':
+      iconColor = 'blue';
+      break;
+  }
+
+  // More specific icons can be used here if available
+  // For simplicity, we'll use colored circles as placeholders
+  const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" fill="${iconColor}" stroke="white" stroke-width="2"/></svg>`;
+  
+  return L.divIcon({
+    html: svgIcon,
+    className: 'custom-leaflet-icon', // Add a class for potential further styling
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+  });
 };
 
 const getStatusClass = (status: ResourceStatus): string => {
@@ -250,22 +247,36 @@ const ResourceMap: React.FC = () => {
                     <p>Ładowanie mapy...</p>
                   </div>
                 ) : (
-                  <>
-                    <MockMap 
-                      resources={filteredResources}
-                      selectedResource={selectedResource}
-                      onSelectResource={handleResourceClick}
+                  <MapContainer center={[52.2297, 21.0122]} zoom={13} scrollWheelZoom={true} className="h-full w-full rounded-lg">
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    
+                    {filteredResources.map(resource => (
+                      <Marker 
+                        key={resource.id} 
+                        position={[resource.location.coordinates.lat, resource.location.coordinates.lng]}
+                        icon={getStatusIcon(resource.status)}
+                        eventHandlers={{
+                          click: () => {
+                            handleResourceClick(resource);
+                          },
+                        }}
+                      >
+                        {/* Popup is handled globally now based on selectedResource */}
+                      </Marker>
+                    ))}
                     {selectedResource && (
-                      <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96">
-                        <ResourceMarkerPopup 
-                          resource={selectedResource}
-                          onClose={() => setSelectedResource(null)}
-                        />
-                      </div>
+                       <Popup position={[selectedResource.location.coordinates.lat, selectedResource.location.coordinates.lng]}>
+                         <div className="w-80"> {/* Ensure popup has some width */}
+                          <ResourceMarkerPopup
+                            resource={selectedResource}
+                            onClose={() => setSelectedResource(null)}
+                          />
+                         </div>
+                       </Popup>
                     )}
-                  </>
+                  </MapContainer>
                 )}
               </div>
             </TabsContent>

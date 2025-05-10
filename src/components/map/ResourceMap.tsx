@@ -13,7 +13,12 @@ import { Map as MapIcon, Search } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import shp from 'shpjs';
+import shp, { parseShp, parseDbf, combine } from 'shpjs';
+import { reproject } from 'reproject';
+import proj4 from 'proj4';
+
+// Define EPSG:2180 (PUWG 1992 / Poland CS92) for proj4
+proj4.defs('EPSG:2180', '+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
 // Custom icon for markers
 const getStatusIcon = (status: ResourceStatus) => {
@@ -73,52 +78,134 @@ const ResourceMap: React.FC = () => {
   const [organization, setOrganization] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
-  const [communeShapefileData, setCommuneShapefileData] = useState<any>(null); // State for GeoJSON data
+  const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]); 
   const mapRef = useRef<L.Map | null>(null); // Ref to access map instance
 
+  // Effect for fetching initial resources
   useEffect(() => {
-    const fetchResourcesAndShapefile = async () => {
+    const fetchInitialResources = async () => {
       try {
         setIsLoading(true);
-        const data = await getAllResources();
-        setResources(data);
-        setFilteredResources(data);
-
-        // Fetch and parse the shapefile
-        // Ensure the path to the zip file in the public folder is correct.
-        const response = await fetch('/wojewodztwa.zip'); 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} for /wojewodztwa.zip`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-        const geojson = await shp(arrayBuffer); // Corrected line
-        setCommuneShapefileData(geojson);
-
+        const resourceData = await getAllResources();
+        setResources(resourceData);
+        setFilteredResources(resourceData); 
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching initial resources:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchResourcesAndShapefile();
+    fetchInitialResources();
   }, []);
 
+  // Effect for updating commune layers based on filtered resources
   useEffect(() => {
-    const filtered = resources.filter((resource) => {
+    const updateCommuneLayers = async () => {
+      if (isLoading) return; // Don't run if initial resources are still loading
+
+      if (filteredResources.length === 0) {
+        setMapGeoJsonLayers([]); // Clear layers if no resources are filtered
+        return;
+      }
+
+      try {
+        const locations = filteredResources.map(resource => ({
+          lat: resource.location.coordinates.lat,
+          lon: resource.location.coordinates.lng
+        }));
+        
+        const uniqueLocationStrings = new Set(locations.map(loc => JSON.stringify(loc)));
+        const uniqueLocations = Array.from(uniqueLocationStrings).map(str => JSON.parse(str));
+
+        if (uniqueLocations.length === 0) {
+          setMapGeoJsonLayers([]); // Clear layers if no unique locations
+          return;
+        }
+
+        const communesResponse = await fetch('http://127.0.0.1:8000/find_communes/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(uniqueLocations)
+        });
+
+        if (!communesResponse.ok) {
+          console.error(`HTTP error! status: ${communesResponse.status} for /find_communes/`);
+          setMapGeoJsonLayers([]); // Clear layers on error
+          return;
+        }
+        
+        const communeApiResults: { input_coordinate: { lat: number; lon: number }; commune_name: string; status: string }[] = await communesResponse.json();
+        
+        const foundCommuneNames = communeApiResults
+          .filter(result => result.status === 'found' && result.commune_name)
+          .map(result => result.commune_name);
+        
+        const uniqueCommuneNames = [...new Set(foundCommuneNames)];
+
+        if (uniqueCommuneNames.length === 0) {
+          setMapGeoJsonLayers([]); // Clear layers if no communes found for filtered resources
+          return;
+        }
+
+        const communeShapefilePromises = uniqueCommuneNames.map(async (name) => {
+          const shapefilePath = `/files/gminy_JPT_NAZWA__${name}.shp`;
+          const dbfFilePath = `/files/gminy_JPT_NAZWA__${name}.dbf`;
+          try {
+            const [shpResponse, dbfResponse] = await Promise.all([
+              fetch(shapefilePath),
+              fetch(dbfFilePath)
+            ]);
+
+            if (!shpResponse.ok || !dbfResponse.ok) {
+              console.warn(`SHP or DBF file for commune ${name} not found or error. SHP: ${shpResponse.status}, DBF: ${dbfResponse.status}`);
+              return null;
+            }
+
+            const shpBuffer = await shpResponse.arrayBuffer();
+            const dbfBuffer = await dbfResponse.arrayBuffer();
+            
+            const features = parseShp(shpBuffer);
+            const attributes = (parseDbf as any)(dbfBuffer, 'UTF-8'); 
+            const geojson = combine([features, attributes]);
+            
+            const sourceProjection = 'EPSG:2180'; 
+            const targetProjection = 'EPSG:4326';
+            const reprojectedGeoJson = reproject(geojson, sourceProjection, targetProjection, proj4.defs);
+            return reprojectedGeoJson;
+          } catch (error) {
+            console.error(`Error loading, parsing, or reprojecting shapefile/dbf for commune ${name}:`, error);
+            return null;
+          }
+        });
+
+        const newCommuneGeoJsonLayers = (await Promise.all(communeShapefilePromises)).filter(Boolean);
+        
+        setMapGeoJsonLayers(newCommuneGeoJsonLayers); 
+        console.log('Updated commune GeoJSON layers (count):', newCommuneGeoJsonLayers.length);
+
+      } catch (error) {
+        console.error("Error updating commune layers based on filtered resources:", error);
+        setMapGeoJsonLayers([]); // Clear layers on error
+      }
+    };
+
+    updateCommuneLayers();
+  }, [filteredResources, isLoading]);
+
+  useEffect(() => {
+    setFilteredResources(resources.filter((resource) => {
       const matchesSearch = search
         ? resource.name.toLowerCase().includes(search.toLowerCase()) ||
           resource.description.toLowerCase().includes(search.toLowerCase()) ||
           resource.location.name.toLowerCase().includes(search.toLowerCase())
         : true;
-        const matchesCategory = category === 'all' ? true : resource.category === category;
+      const matchesCategory = category === 'all' ? true : resource.category === category;
       const matchesStatus = status === 'all' ? true : resource.status === status;
       const matchesOrganization = organization === 'all' ? true : resource.organization === organization;
 
       return matchesSearch && matchesCategory && matchesStatus && matchesOrganization;
-    });
-
-    setFilteredResources(filtered);
+    }));
   }, [search, category, status, organization, resources]);
 
   const handleResourceClick = (resource: Resource | null) => {
@@ -265,32 +352,35 @@ const ResourceMap: React.FC = () => {
                 ) : (
                   <MapContainer 
                     center={[52.2297, 21.0122]} 
-                    zoom={6} // Adjusted zoom to better see the whole region initially
+                    zoom={6} 
                     scrollWheelZoom={true} 
                     className="h-full w-full rounded-lg"
-                    whenReady={() => { /* mapInstance is implicitly available via useMap hook or mapRef.current if needed after initial render */ }}
+                    whenReady={() => { }}
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {communeShapefileData && (
+                    {mapGeoJsonLayers.map((geoJsonData, index) => (
                       <GeoJSON 
-                        data={communeShapefileData} 
-                        style={() => ({
-                          color: "#4A83EC", // Example style, customize as needed
-                          weight: 2,
-                          opacity: 1,
-                          fillOpacity: 0.3
-                        })}
+                        key={`geojson-layer-${index}`} 
+                        data={geoJsonData} 
+                        style={(feature) => {
+                          return {
+                            color: "#FF6347",
+                            weight: 1,
+                            opacity: 0.8,
+                            fillOpacity: 0.25
+                          };
+                        }}
                         onEachFeature={(feature, layer) => {
-                          // Adjust property name based on your shapefile's attributes
-                          if (feature.properties && feature.properties.JPT_NAZWA_ ) { 
-                            layer.bindPopup(feature.properties.JPT_NAZWA_);
+                          const nameProperty = feature.properties?.JPT_NAZWA_ || feature.properties?.name || feature.properties?.NAZWA;
+                          if (nameProperty) { 
+                            layer.bindPopup(String(nameProperty));
                           }
                         }}
                       />
-                    )}
+                    ))}
                     {filteredResources.map(resource => (
                       <Marker 
                         key={resource.id} 
@@ -302,12 +392,11 @@ const ResourceMap: React.FC = () => {
                           },
                         }}
                       >
-                        {/* Popup is handled globally now based on selectedResource */}
                       </Marker>
                     ))}
                     {selectedResource && (
                        <Popup position={[selectedResource.location.coordinates.lat, selectedResource.location.coordinates.lng]}>
-                         <div className="w-80"> {/* Ensure popup has some width */}
+                         <div className="w-80">
                           <ResourceMarkerPopup
                             resource={selectedResource}
                             onClose={() => setSelectedResource(null)}

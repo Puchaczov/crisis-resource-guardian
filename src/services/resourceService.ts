@@ -535,8 +535,8 @@ export const getStatusClass = (status: ResourceStatus): string => {
 };
 
 // Categories for selection
-export const resourceCategories: { value: ResourceCategory | ''; label: string }[] = [
-  { value: '', label: 'Wszystkie kategorie' },
+export const resourceCategories: { value: ResourceCategory | 'all'; label: string }[] = [
+  { value: 'all', label: 'Wszystkie kategorie' },
   { value: 'equipment', label: 'Sprzęt' },
   { value: 'medical', label: 'Zasoby medyczne' },
   { value: 'vehicle', label: 'Pojazdy' },
@@ -549,8 +549,8 @@ export const resourceCategories: { value: ResourceCategory | ''; label: string }
 ];
 
 // Statuses for selection
-export const resourceStatuses: { value: ResourceStatus | ''; label: string }[] = [
-  { value: '', label: 'Wszystkie statusy' },
+export const resourceStatuses: { value: ResourceStatus | 'all'; label: string }[] = [
+  { value: 'all', label: 'Wszystkie statusy' },
   { value: 'available', label: 'Dostępny' },
   { value: 'reserved', label: 'Zarezerwowany' },
   { value: 'unavailable', label: 'Niedostępny' },
@@ -559,7 +559,7 @@ export const resourceStatuses: { value: ResourceStatus | ''; label: string }[] =
 
 // Organizations for selection
 export const resourceOrganizations: { value: string; label: string }[] = [
-  { value: '', label: 'Wszystkie organizacje' },
+  { value: 'all', label: 'Wszystkie organizacje' },
   { value: 'Straż Pożarna', label: 'Straż Pożarna' },
   { value: 'Urząd Miasta', label: 'Urząd Miasta' },
   { value: 'Czerwony Krzyż', label: 'Czerwony Krzyż' },

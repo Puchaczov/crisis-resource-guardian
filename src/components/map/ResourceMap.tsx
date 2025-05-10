@@ -68,10 +68,9 @@ const ResourceMap: React.FC = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<string>('');
-  const [status, setStatus] = useState<string>('');
-  const [organization, setOrganization] = useState<string>('');
+  const [search, setSearch] = useState('');  const [category, setCategory] = useState<string>('all');
+  const [status, setStatus] = useState<string>('all');
+  const [organization, setOrganization] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
 
@@ -99,10 +98,9 @@ const ResourceMap: React.FC = () => {
           resource.description.toLowerCase().includes(search.toLowerCase()) ||
           resource.location.name.toLowerCase().includes(search.toLowerCase())
         : true;
-      
-      const matchesCategory = category ? resource.category === category : true;
-      const matchesStatus = status ? resource.status === status : true;
-      const matchesOrganization = organization ? resource.organization === organization : true;
+        const matchesCategory = category === 'all' ? true : resource.category === category;
+      const matchesStatus = status === 'all' ? true : resource.status === status;
+      const matchesOrganization = organization === 'all' ? true : resource.organization === organization;
 
       return matchesSearch && matchesCategory && matchesStatus && matchesOrganization;
     });
@@ -113,12 +111,11 @@ const ResourceMap: React.FC = () => {
   const handleResourceClick = (resource: Resource | null) => {
     setSelectedResource(resource);
   };
-
   const clearFilters = () => {
     setSearch('');
-    setCategory('');
-    setStatus('');
-    setOrganization('');
+    setCategory('all');
+    setStatus('all');
+    setOrganization('all');
   };
 
   return (

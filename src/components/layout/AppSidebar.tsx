@@ -23,7 +23,8 @@ import {
   AlertTriangle,
   LayoutDashboard,
   MapPin,
-  Info
+  Info,
+  Bell
 } from "lucide-react";
 
 const AppSidebar = () => {
@@ -64,7 +65,7 @@ const AppSidebar = () => {
                     }
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span>Podsumowanie</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -86,13 +87,13 @@ const AppSidebar = () => {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <NavLink 
-                    to="/integrations"
+                    to="/emergency-actions"
                     className={({ isActive }) => 
                       isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
                     }
                   >
-                    <Database className="h-4 w-4" />
-                    <span>Integracje zewnętrzne</span>
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>Planer Kryzysowy</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -107,6 +108,20 @@ const AppSidebar = () => {
                   >
                     <Database className="h-4 w-4" />
                     <span>Zasoby</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/alerts"
+                    className={({ isActive }) => 
+                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                    }
+                  >
+                    <Bell className="h-4 w-4" />
+                    <span>Alerty</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -142,6 +157,20 @@ const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/integrations"
+                    className={({ isActive }) => 
+                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                    }
+                  >
+                    <Database className="h-4 w-4" />
+                    <span>Integracje zewnętrzne</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
 
               {isAdmin && (
                 <SidebarMenuItem>

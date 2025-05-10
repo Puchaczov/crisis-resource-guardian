@@ -1,4 +1,3 @@
-
 import { Resource, ResourceCategory, ResourceStatus } from "@/types/resources";
 
 // Mock data
@@ -569,3 +568,19 @@ export const resourceOrganizations: { value: string; label: string }[] = [
   { value: 'Urząd Miasta Kraków', label: 'Urząd Miasta Kraków' },
   { value: 'Urząd Wojewódzki Pomorski', label: 'Urząd Wojewódzki Pomorski' }
 ];
+
+export const getResourceStats = async () => {
+  return Promise.resolve({
+    foodSupply: {
+      ownResources: 5,
+      privateResources: 12,
+      requiredDays: 7
+    },
+    hospitalBeds: {
+      total: 2500,
+      available: 750,
+      bedsPerTenThousand: 7.5,
+      availabilityPercentage: 30
+    }
+  });
+};

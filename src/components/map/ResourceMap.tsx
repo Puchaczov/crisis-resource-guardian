@@ -73,7 +73,7 @@ const ResourceMap: React.FC = () => {
   const [organization, setOrganization] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
-  const [shapefileData, setShapefileData] = useState<any>(null); // State for GeoJSON data
+  const [communeShapefileData, setCommuneShapefileData] = useState<any>(null); // State for GeoJSON data
   const mapRef = useRef<L.Map | null>(null); // Ref to access map instance
 
   useEffect(() => {
@@ -92,7 +92,7 @@ const ResourceMap: React.FC = () => {
         }
         const arrayBuffer = await response.arrayBuffer();
         const geojson = await shp(arrayBuffer); // Corrected line
-        setShapefileData(geojson);
+        setCommuneShapefileData(geojson);
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -274,9 +274,9 @@ const ResourceMap: React.FC = () => {
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {shapefileData && (
+                    {communeShapefileData && (
                       <GeoJSON 
-                        data={shapefileData} 
+                        data={communeShapefileData} 
                         style={() => ({
                           color: "#4A83EC", // Example style, customize as needed
                           weight: 2,

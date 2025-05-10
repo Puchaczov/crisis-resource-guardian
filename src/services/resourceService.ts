@@ -569,3 +569,9 @@ export const resourceOrganizations: { value: string; label: string }[] = [
   { value: 'Urząd Miasta Kraków', label: 'Urząd Miasta Kraków' },
   { value: 'Urząd Wojewódzki Pomorski', label: 'Urząd Wojewódzki Pomorski' }
 ];
+
+export const commune: {
+  name: string;
+} = {
+  name: 'Warszawa'
+}

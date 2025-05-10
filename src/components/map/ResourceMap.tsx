@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { getAllResources } from '@/services/resourceService';
 import { Resource, ResourceStatus } from '@/types/resources';
 import { Card, CardContent, CardTitle, CardHeader } from '@/components/ui/card';
@@ -18,7 +18,7 @@ import 'leaflet/dist/leaflet.css';
 import shp, { parseShp, parseDbf, combine } from 'shpjs';
 import { reproject } from 'reproject';
 import proj4 from 'proj4';
-import { useSearchParams } from 'react-router-dom'; // Import useSearchParams
+import { useSearchParams } from 'react-router-dom';
 
 // Define EPSG:2180 (PUWG 1992 / Poland CS92) for proj4
 proj4.defs('EPSG:2180', '+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
@@ -82,22 +82,30 @@ const getBadgeVariantForStatus = (status: ResourceStatus): "default" | "secondar
   }
 };
 
+const DEFAULT_DISTANCE_KM = 500;
+const CENTRAL_FIXED_POINT_LAT = 52.2297;
+const CENTRAL_FIXED_POINT_LNG = 21.0122;
+
 const ResourceMap: React.FC = () => {
   const [resources, setResources] = useState<(Resource & { communeName?: string })[]>([]);
   const [filteredResources, setFilteredResources] = useState<(Resource & { communeName?: string })[]>([]);
   const [selectedResource, setSelectedResource] = useState<(Resource & { communeName?: string }) | null>(null);
   
-  const [searchParams, setSearchParams] = useSearchParams(); // Initialize useSearchParams
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [status, setStatus] = useState(searchParams.get('status') || 'all');
   const [organization, setOrganization] = useState(searchParams.get('organization') || 'all');
+  const [distanceKm, setDistanceKm] = useState<number>(() => {
+    const dParam = searchParams.get('distanceKm');
+    return dParam ? parseInt(dParam, 10) : DEFAULT_DISTANCE_KM;
+  });
 
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
-  const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]); 
-  const mapRef = useRef<L.Map | null>(null); // Ref to access map instance
+  const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]);
+  const mapRef = useRef<L.Map | null>(null);
 
   // Effect for fetching initial resources
   useEffect(() => {
@@ -105,17 +113,6 @@ const ResourceMap: React.FC = () => {
       try {
         setIsLoading(true);
         const resourceData = await getAllResources();
-
-        // Read initial filters from URL
-        const urlSearch = searchParams.get('search');
-        const urlCategory = searchParams.get('category');
-        const urlStatus = searchParams.get('status');
-        const urlOrganization = searchParams.get('organization');
-
-        if (urlSearch) setSearch(urlSearch);
-        if (urlCategory) setCategory(urlCategory);
-        if (urlStatus) setStatus(urlStatus);
-        if (urlOrganization) setOrganization(urlOrganization);
 
         if (resourceData.length > 0) {
           const locationsForAnnotation = resourceData.map(r => ({ 
@@ -160,7 +157,7 @@ const ResourceMap: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching initial resources:", error);
-        setResources([]); // Ensure state is empty on error
+        setResources([]);
         setFilteredResources([]);
       } finally {
         setIsLoading(false);
@@ -173,10 +170,10 @@ const ResourceMap: React.FC = () => {
   // Effect for updating commune layers based on filtered resources
   useEffect(() => {
     const updateCommuneLayers = async () => {
-      if (isLoading) return; // Don't run if initial resources are still loading
+      if (isLoading) return;
 
       if (filteredResources.length === 0) {
-        setMapGeoJsonLayers([]); // Clear layers if no resources are filtered
+        setMapGeoJsonLayers([]);
         return;
       }
 
@@ -190,7 +187,7 @@ const ResourceMap: React.FC = () => {
         const uniqueLocations = Array.from(uniqueLocationStrings).map(str => JSON.parse(str));
 
         if (uniqueLocations.length === 0) {
-          setMapGeoJsonLayers([]); // Clear layers if no unique locations
+          setMapGeoJsonLayers([]);
           return;
         }
 
@@ -202,7 +199,7 @@ const ResourceMap: React.FC = () => {
 
         if (!communesResponse.ok) {
           console.error(`HTTP error! status: ${communesResponse.status} for /find_communes/`);
-          setMapGeoJsonLayers([]); // Clear layers on error
+          setMapGeoJsonLayers([]);
           return;
         }
         
@@ -215,7 +212,7 @@ const ResourceMap: React.FC = () => {
         const uniqueCommuneNames = [...new Set(foundCommuneNames)];
 
         if (uniqueCommuneNames.length === 0) {
-          setMapGeoJsonLayers([]); // Clear layers if no communes found for filtered resources
+          setMapGeoJsonLayers([]);
           return;
         }
 
@@ -252,17 +249,19 @@ const ResourceMap: React.FC = () => {
 
         const newCommuneGeoJsonLayers = (await Promise.all(communeShapefilePromises)).filter(Boolean);
         
-        setMapGeoJsonLayers(newCommuneGeoJsonLayers); 
+        setMapGeoJsonLayers(newCommuneGeoJsonLayers);
         console.log('Updated commune GeoJSON layers (count):', newCommuneGeoJsonLayers.length);
 
       } catch (error) {
         console.error("Error updating commune layers based on filtered resources:", error);
-        setMapGeoJsonLayers([]); // Clear layers on error
+        setMapGeoJsonLayers([]);
       }
     };
 
     updateCommuneLayers();
   }, [filteredResources, isLoading]);
+
+  const centralPoint = useMemo(() => L.latLng(CENTRAL_FIXED_POINT_LAT, CENTRAL_FIXED_POINT_LNG), []);
 
   // Effect for updating URL when filters change
   useEffect(() => {
@@ -271,8 +270,13 @@ const ResourceMap: React.FC = () => {
     if (category !== 'all') params.set('category', category);
     if (status !== 'all') params.set('status', status);
     if (organization !== 'all') params.set('organization', organization);
+    if (distanceKm !== DEFAULT_DISTANCE_KM) {
+      params.set('distanceKm', distanceKm.toString());
+    } else {
+      params.delete('distanceKm');
+    }
     setSearchParams(params, { replace: true });
-  }, [search, category, status, organization, setSearchParams]);
+  }, [search, category, status, organization, distanceKm, setSearchParams]);
 
   useEffect(() => {
     setFilteredResources(resources.filter((resource) => {
@@ -287,19 +291,27 @@ const ResourceMap: React.FC = () => {
       const matchesStatus = status === 'all' ? true : resource.status === status;
       const matchesOrganization = organization === 'all' ? true : resource.organization === organization;
 
-      return matchesSearch && matchesCategory && matchesStatus && matchesOrganization;
+      const matchesDistance = (() => {
+        if (!resource.location?.coordinates) return true;
+        const resourcePoint = L.latLng(resource.location.coordinates.lat, resource.location.coordinates.lng);
+        const distMeters = centralPoint.distanceTo(resourcePoint);
+        const distKmValue = distMeters / 1000;
+        return distKmValue <= distanceKm;
+      })();
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesOrganization && matchesDistance;
     }));
-  }, [search, category, status, organization, resources]);
+  }, [search, category, status, organization, distanceKm, resources, centralPoint]);
 
   // Effect for centering map on filtered resources
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return; // Map not yet available
+    if (!map) return;
 
     if (filteredResources.length > 0) {
       if (filteredResources.length === 1) {
         const resource = filteredResources[0];
-        map.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 13); // Zoom level 13 for a single point
+        map.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 13);
       } else {
         const bounds = L.latLngBounds(
           filteredResources.map(resource => [
@@ -311,13 +323,8 @@ const ResourceMap: React.FC = () => {
           map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16 });
         }
       }
-    } 
-    // else {
-    //   // Optional: Reset to default view if no resources are filtered and map is not manually panned/zoomed
-    //   // For now, do nothing to respect user's manual map navigation
-    //   // map.flyTo([52.2297, 21.0122], 6); 
-    // }
-  }, [filteredResources]); // Re-run when filteredResources changes
+    }
+  }, [filteredResources]);
 
   const handleResourceClick = (resource: (Resource & { communeName?: string }) | null) => {
     setSelectedResource(resource);
@@ -325,18 +332,24 @@ const ResourceMap: React.FC = () => {
       mapRef.current.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 14);
     }
   };
+
   const clearFilters = () => {
     setSearch('');
     setCategory('all');
     setStatus('all');
     setOrganization('all');
+    setDistanceKm(DEFAULT_DISTANCE_KM);
   };
 
-  const localCommuneName = commune.name; // Use imported commune name
+  const localCommuneName = commune.name;
 
   const isAnyFilterActive = React.useMemo(() => 
-    search !== '' || category !== 'all' || status !== 'all' || organization !== 'all',
-    [search, category, status, organization]
+    search !== '' || 
+    category !== 'all' || 
+    status !== 'all' || 
+    organization !== 'all' ||
+    distanceKm !== DEFAULT_DISTANCE_KM,
+    [search, category, status, organization, distanceKm]
   );
 
   const resourcesInLocalCommune = React.useMemo(() =>
@@ -389,17 +402,13 @@ const ResourceMap: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col overflow-y-auto"> {/* SCROLLABLE ROOT */}
-      
-      {/* VIEWPORT FILLER WRAPPER */}
+    <div className="flex flex-col overflow-y-auto">
       <div className="flex-1 flex flex-col min-h-0"> 
         <h1 className="text-2xl font-bold mb-4 flex-shrink-0">Mapa zasobów</h1>
         
-        {/* MAP AND FILTERS ROW (now child of WRAPPER) */}
         <div className="flex-1 flex flex-col md:flex-row gap-4 min-h-0">
-          {/* Filters Card */}
           <Card className="w-full md:w-80 flex flex-col">
-            <CardContent className="pt-6 flex-1 overflow-y-auto"> {/* CHANGED from h-full */}
+            <CardContent className="pt-6 flex-1 overflow-y-auto">
               <Tabs defaultValue="filters" className="h-full flex flex-col">
                 <TabsList className="grid grid-cols-2 mb-4">
                   <TabsTrigger value="filters">Filtry</TabsTrigger>
@@ -461,6 +470,19 @@ const ResourceMap: React.FC = () => {
                     </Select>
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="distanceKm">Max odległość od centrum: {distanceKm} km</Label>
+                    <Input
+                      type="range"
+                      id="distanceKm"
+                      min="1"
+                      max="500"
+                      value={distanceKm}
+                      onChange={(e) => setDistanceKm(parseInt(e.target.value, 10))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    />
+                  </div>
+
                   <div className="pt-2">
                     <Button 
                       onClick={clearFilters} 
@@ -511,7 +533,7 @@ const ResourceMap: React.FC = () => {
             </CardContent>
           </Card>
           
-          <div className="flex-1 flex flex-col overflow-hidden"> {/* Map Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
               <TabsList className="grid grid-cols-2 w-60 mb-4">
                 <TabsTrigger value="map">Widok mapy</TabsTrigger>
@@ -526,7 +548,7 @@ const ResourceMap: React.FC = () => {
                     </div>
                   ) : (
                     <MapContainer 
-                      ref={mapRef} // Use ref to get the map instance
+                      ref={mapRef}
                       center={[52.2297, 21.0122]} 
                       zoom={6} 
                       scrollWheelZoom={true} 
@@ -604,11 +626,9 @@ const ResourceMap: React.FC = () => {
             </Tabs>
           </div>
         </div>
-      </div> {/* End of VIEWPORT FILLER WRAPPER */}
+      </div>
 
-      {/* TABLES CONTAINER (now sibling of WRAPPER) */}
       <div className="mt-4 flex-shrink-0">
-        
         {isAnyFilterActive && (resourcesInLocalCommune.length > 0 || resourcesInOtherCommunes.length > 0) && (
           <>
             {renderResourceTable(`Zasoby w ${localCommuneName} (wg. filtrów)`, resourcesInLocalCommune, false)}

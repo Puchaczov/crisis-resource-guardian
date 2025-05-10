@@ -1,4 +1,3 @@
-
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +79,20 @@ const AppSidebar = () => {
                   >
                     <Map className="h-4 w-4" />
                     <span>Mapa zasobów</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to="/integrations"
+                    className={({ isActive }) => 
+                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                    }
+                  >
+                    <Database className="h-4 w-4" />
+                    <span>Integracje zewnętrzne</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

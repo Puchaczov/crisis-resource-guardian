@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import MapPage from "@/pages/MapPage";
 import ResourcesPage from "@/pages/ResourcesPage";
 import AddResourcePage from "@/pages/AddResourcePage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import IntegrationsPage from "@/pages/IntegrationsPage";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +37,7 @@ const App = () => (
               <Route path="/reports" element={<div className="p-4">Raporty - strona w budowie</div>} />
               <Route path="/settings" element={<div className="p-4">Ustawienia - strona w budowie</div>} />
               <Route path="/users" element={<div className="p-4">Użytkownicy - strona w budowie</div>} />
+              <Route path="/integrations" element={<IntegrationsPage />} />
             </Route>
             
             {/* 404 catch-all route */}

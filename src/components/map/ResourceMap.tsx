@@ -208,6 +208,34 @@ const ResourceMap: React.FC = () => {
     }));
   }, [search, category, status, organization, resources]);
 
+  // Effect for centering map on filtered resources
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return; // Map not yet available
+
+    if (filteredResources.length > 0) {
+      if (filteredResources.length === 1) {
+        const resource = filteredResources[0];
+        map.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 13); // Zoom level 13 for a single point
+      } else {
+        const bounds = L.latLngBounds(
+          filteredResources.map(resource => [
+            resource.location.coordinates.lat,
+            resource.location.coordinates.lng
+          ])
+        );
+        if (bounds.isValid()) {
+          map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        }
+      }
+    } 
+    // else {
+    //   // Optional: Reset to default view if no resources are filtered and map is not manually panned/zoomed
+    //   // For now, do nothing to respect user's manual map navigation
+    //   // map.flyTo([52.2297, 21.0122], 6); 
+    // }
+  }, [filteredResources]); // Re-run when filteredResources changes
+
   const handleResourceClick = (resource: Resource | null) => {
     setSelectedResource(resource);
   };
@@ -351,11 +379,11 @@ const ResourceMap: React.FC = () => {
                   </div>
                 ) : (
                   <MapContainer 
+                    ref={mapRef} // Use ref to get the map instance
                     center={[52.2297, 21.0122]} 
                     zoom={6} 
                     scrollWheelZoom={true} 
                     className="h-full w-full rounded-lg"
-                    whenReady={() => { }}
                   >
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

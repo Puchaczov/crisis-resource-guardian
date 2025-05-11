@@ -450,6 +450,22 @@ const poznanResources: Resource[] = [
     organization: "Pogotowie Ratunkowe",
     lastUpdated: "2025-04-20T10:00:00Z",
     telemetry: { battery: 60, lastSignal: "2025-04-20T09:55:00Z"}
+  },
+  {
+    id: "poznan-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Składane łóżka polowe z materacem.",
+    quantity: 150,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "PCK Poznań",
+      address: "ul. Stare Miasto, 61-706 Poznań",
+      coordinates: { lat: 52.4095, lng: 16.9319 }
+    },
+    organization: "PCK Poznań",
+    lastUpdated: "2024-05-11T08:00:00Z"
   }
 ];
 mockResources.push(...poznanResources);
@@ -503,6 +519,22 @@ const wroclawResources: Resource[] = [
     },
     organization: "Czerwony Krzyż",
     lastUpdated: "2025-03-10T08:45:00Z"
+  },
+  {
+    id: "wroclaw-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Standardowe łóżka polowe, metalowa rama.",
+    quantity: 200,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Magazyn Rezerw Strategicznych Wrocław",
+      address: "ul. Rynek, 50-001 Wrocław",
+      coordinates: { lat: 51.1100, lng: 17.0320 }
+    },
+    organization: "Magazyn Rezerw Strategicznych Wrocław",
+    lastUpdated: "2024-05-11T09:30:00Z"
   }
 ];
 mockResources.push(...wroclawResources);
@@ -541,6 +573,22 @@ const lodzResources: Resource[] = [
     },
     organization: "Urząd Miasta Łódź",
     lastUpdated: "2024-10-10T10:10:00Z"
+  },
+  {
+    id: "lodz-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Łóżka polowe dla ewakuowanych.",
+    quantity: 120,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Urząd Miasta Łodzi - Wydział Zarządzania Kryzysowego",
+      address: "ul. Bałuty, 91-341 Łódź",
+      coordinates: { lat: 51.7767, lng: 19.4547 }
+    },
+    organization: "Urząd Miasta Łodzi - Wydział Zarządzania Kryzysowego",
+    lastUpdated: "2024-05-11T10:15:00Z"
   }
 ];
 mockResources.push(...lodzResources);
@@ -578,6 +626,22 @@ const szczecinResources: Resource[] = [
     },
     organization: "MOPS Szczecin",
     lastUpdated: "2025-04-01T12:00:00Z"
+  },
+  {
+    id: "szczecin-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Łóżka polowe z kocami.",
+    quantity: 80,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "PCK Szczecin",
+      address: "ul. Centrum, 70-313 Szczecin",
+      coordinates: { lat: 53.4300, lng: 14.5550 }
+    },
+    organization: "PCK Szczecin",
+    lastUpdated: "2024-05-11T11:00:00Z"
   }
 ];
 mockResources.push(...szczecinResources);
@@ -616,6 +680,22 @@ const lublinResources: Resource[] = [
     },
     organization: "Caritas Archidiecezji Lubelskiej",
     lastUpdated: "2025-02-18T10:30:00Z"
+  },
+  {
+    id: "lublin-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Łóżka polowe, stan dobry.",
+    quantity: 100,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Magazyn Obrony Cywilnej Lublin",
+      address: "ul. Śródmieście, 20-108 Lublin",
+      coordinates: { lat: 51.2480, lng: 22.5700 }
+    },
+    organization: "Magazyn Obrony Cywilnej Lublin",
+    lastUpdated: "2024-05-11T12:30:00Z"
   }
 ];
 mockResources.push(...lublinResources);
@@ -858,9 +938,142 @@ const bydgoszczResources: Resource[] = [
     organization: "Poczta Polska",
     lastUpdated: "2025-03-01T08:00:00Z",
     telemetry: { fuel: 75, lastSignal: "2025-03-01T07:55:00Z" }
+  },
+  {
+    id: "by2-personnel",
+    name: "Kierowcy pojazdów ciężarowych kat. C+E",
+    description: "Doświadczeni kierowcy do transportu zaopatrzenia",
+    quantity: 10,
+    unit: "osób",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Baza Transportowa Bydgoszcz",
+      address: "ul. Przemysłowa 34, 85-758 Bydgoszcz",
+      coordinates: { lat: 53.1320, lng: 18.0050 }
+    },
+    organization: "Poczta Polska",
+    lastUpdated: "2025-05-10T10:00:00Z"
+  },
+  {
+    id: "bydgoszcz-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Łóżka polowe dla potrzebujących.",
+    quantity: 70,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "PCK Bydgoszcz",
+      address: "ul. Fordon, 85-758 Bydgoszcz",
+      coordinates: { lat: 53.1250, lng: 18.0100 }
+    },
+    organization: "PCK Bydgoszcz",
+    lastUpdated: "2024-05-11T13:00:00Z"
   }
 ];
 mockResources.push(...bydgoszczResources);
+
+// Add more varied personnel
+const additionalPersonnelResources: Resource[] = [
+  {
+    id: "pers1",
+    name: "Strażacy OSP (Jednostka Mobilna)",
+    description: "Drużyna strażaków ochotników gotowa do szybkiego reagowania.",
+    quantity: 2,
+    unit: "drużyn",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Remiza OSP Warszawa-Wesoła",
+      address: "ul. Leśna 5, 05-077 Warszawa",
+      coordinates: { lat: 52.2550, lng: 21.2350 }
+    },
+    organization: "OSP Warszawa-Wesoła",
+    lastUpdated: "2025-05-01T08:00:00Z"
+  },
+  {
+    id: "pers2",
+    name: "Technicy logistyki kryzysowej",
+    description: "Specjaliści ds. zarządzania łańcuchem dostaw w sytuacjach kryzysowych.",
+    quantity: 5,
+    unit: "osób",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Centrum Logistyczne RARS",
+      address: "ul. Logistyczna 10, 02-495 Warszawa",
+      coordinates: { lat: 52.1800, lng: 20.9000 }
+    },
+    organization: "Rządowa Agencja Rezerw Strategicznych",
+    lastUpdated: "2025-04-25T14:30:00Z"
+  },
+  {
+    id: "pers3",
+    name: "Operatorzy dronów z uprawnieniami",
+    description: "Certyfikowani operatorzy dronów do zadań rozpoznawczych i mapowania.",
+    quantity: 3,
+    unit: "zespołów",
+    category: "personnel",
+    status: "maintenance",
+    location: {
+      name: "Baza Lotnicza Straży Granicznej",
+      address: "Nowy Dwór Mazowiecki, Lotnisko Modlin",
+      coordinates: { lat: 52.4511, lng: 20.6518 }
+    },
+    organization: "Straż Graniczna",
+    lastUpdated: "2025-05-05T11:00:00Z"
+  },
+  {
+    id: "pers4",
+    name: "Specjaliści ds. komunikacji kryzysowej",
+    description: "Eksperci ds. PR i komunikacji z mediami oraz ludnością w kryzysie.",
+    quantity: 4,
+    unit: "osób",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Rządowe Centrum Bezpieczeństwa",
+      address: "Al. Ujazdowskie 5, 00-583 Warszawa",
+      coordinates: { lat: 52.2167, lng: 21.0222 }
+    },
+    organization: "Rządowe Centrum Bezpieczeństwa",
+    lastUpdated: "2025-04-15T09:00:00Z"
+  },
+  {
+    id: "pers5",
+    name: "Wolontariusze - wsparcie logistyczne",
+    description: "Zarejestrowani wolontariusze do pomocy w sortowaniu, pakowaniu i dystrybucji.",
+    quantity: 50,
+    unit: "osób",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Miejski Ośrodek Pomocy Wolontariuszom Kraków",
+      address: "ul. Wolontariacka 1, 30-001 Kraków",
+      coordinates: { lat: 50.0600, lng: 19.9420 }
+    },
+    organization: "Wolontariat Miejski Kraków",
+    lastUpdated: "2025-05-08T16:00:00Z"
+  },
+  {
+    id: "pers6",
+    name: "Ratownicy GOPR",
+    description: "Górskie Ochotnicze Pogotowie Ratunkowe - grupa interwencyjna.",
+    quantity: 2,
+    unit: "zespołów",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Stacja Centralna GOPR Zakopane",
+      address: "ul. Piłsudskiego 63a, 34-500 Zakopane",
+      coordinates: { lat: 49.2920, lng: 19.9600 }
+    },
+    organization: "GOPR",
+    lastUpdated: "2025-05-02T10:15:00Z"
+  }
+];
+mockResources.push(...additionalPersonnelResources);
 
 export const getAllResources = (): Promise<Resource[]> => {
   return Promise.resolve([...mockResources]);
@@ -1048,7 +1261,17 @@ export const resourceOrganizations: { value: string; label: string }[] = [
   { value: 'Urząd Miasta Białystok', label: 'Urząd Miasta Białystok' },
   { value: 'Urząd Miasta Gdynia', label: 'Urząd Miasta Gdynia' },
   { value: 'Urząd Miasta Toruń', label: 'Urząd Miasta Toruń' },
-  { value: 'Urząd Miasta Olsztyn', label: 'Urząd Miasta Olsztyn' }
+  { value: 'Urząd Miasta Olsztyn', label: 'Urząd Miasta Olsztyn' },
+  { value: 'OSP Warszawa-Wesoła', label: 'OSP Warszawa-Wesoła' },
+  { value: 'Rządowe Centrum Bezpieczeństwa', label: 'Rządowe Centrum Bezpieczeństwa' },
+  { value: 'Wolontariat Miejski Kraków', label: 'Wolontariat Miejski Kraków' },
+  { value: 'GOPR', label: 'GOPR' },
+  { value: 'PCK Poznań', label: 'PCK Poznań' },
+  { value: 'Magazyn Rezerw Strategicznych Wrocław', label: 'Magazyn Rezerw Strategicznych Wrocław' },
+  { value: 'Urząd Miasta Łodzi - Wydział Zarządzania Kryzysowego', label: 'Urząd Miasta Łodzi - Wydział Zarządzania Kryzysowego' },
+  { value: 'PCK Szczecin', label: 'PCK Szczecin' },
+  { value: 'Magazyn Obrony Cywilnej Lublin', label: 'Magazyn Obrony Cywilnej Lublin' },
+  { value: 'PCK Bydgoszcz', label: 'PCK Bydgoszcz' }
 ];
 
 export const getResourceStats = async () => {

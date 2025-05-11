@@ -107,6 +107,18 @@ const ResourceMap: React.FC = () => {
   const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]);
   const mapRef = useRef<L.Map | null>(null);
 
+  // Moved isAnyFilterActive earlier to be available for the radius circle effect
+  const isAnyFilterActive = React.useMemo(() => 
+    search !== '' || 
+    category !== 'all' || 
+    status !== 'all' || 
+    organization !== 'all' ||
+    distanceKm !== DEFAULT_DISTANCE_KM,
+    [search, category, status, organization, distanceKm]
+  );
+
+  const radiusCircleRef = useRef<L.Circle | null>(null); // Added for search radius circle
+
   // Effect for fetching initial resources
   useEffect(() => {
     const fetchInitialResources = async () => {
@@ -263,6 +275,53 @@ const ResourceMap: React.FC = () => {
 
   const centralPoint = useMemo(() => L.latLng(CENTRAL_FIXED_POINT_LAT, CENTRAL_FIXED_POINT_LNG), []);
 
+  // Effect for drawing/updating search radius circle on map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      if (radiusCircleRef.current) {
+        try {
+          radiusCircleRef.current.remove();
+        } catch (e) {
+          // console.warn("Error removing stale circle during map unmount/reinit phase:", e);
+        }
+        radiusCircleRef.current = null;
+      }
+      return;
+    }
+
+    // Remove existing circle from map if it exists
+    if (radiusCircleRef.current) {
+      radiusCircleRef.current.remove();
+      radiusCircleRef.current = null;
+    }
+
+    // Draw new circle if distance filter is active and not default
+    if (isAnyFilterActive && distanceKm !== DEFAULT_DISTANCE_KM) {
+      const newCircle = L.circle(centralPoint, {
+        radius: distanceKm * 1000, // distanceKm is in km, radius in meters
+        color: 'dodgerblue',
+        fillColor: 'lightskyblue',
+        fillOpacity: 0.15,
+        weight: 1.5,
+        dashArray: '10, 5',
+        interactive: false, // So it doesn't capture mouse events
+      }).addTo(map);
+      radiusCircleRef.current = newCircle;
+    }
+    // Cleanup function to remove circle when component unmounts or dependencies change significantly
+    return () => {
+      if (radiusCircleRef.current && mapRef.current) { // Check mapRef.current as map might be gone
+        try {
+            radiusCircleRef.current.remove();
+        } catch (e) {
+            // console.warn("Error removing circle on cleanup:", e);
+        }
+      }
+      radiusCircleRef.current = null;
+    };
+  }, [centralPoint, distanceKm, isAnyFilterActive, DEFAULT_DISTANCE_KM, mapRef]); // mapRef itself as dependency
+
   // Effect for updating URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
@@ -343,22 +402,28 @@ const ResourceMap: React.FC = () => {
 
   const localCommuneName = commune.name;
 
-  const isAnyFilterActive = React.useMemo(() => 
-    search !== '' || 
-    category !== 'all' || 
-    status !== 'all' || 
-    organization !== 'all' ||
-    distanceKm !== DEFAULT_DISTANCE_KM,
-    [search, category, status, organization, distanceKm]
-  );
-
   const resourcesInLocalCommune = React.useMemo(() =>
     filteredResources.filter(r => r.communeName === localCommuneName),
   [filteredResources, localCommuneName]);
 
   const resourcesInOtherCommunes = React.useMemo(() =>
-    filteredResources.filter(r => r.communeName && r.communeName !== localCommuneName),
-  [filteredResources, localCommuneName]);
+    filteredResources
+      .filter(r => r.communeName && r.communeName !== localCommuneName)
+      .sort((a, b) => {
+        // Ensure coordinates exist before trying to calculate distance
+        if (!a.location?.coordinates && !b.location?.coordinates) return 0;
+        if (!a.location?.coordinates) return 1; // push 'a' (without coords) to the end
+        if (!b.location?.coordinates) return -1; // push 'b' (without coords) to the end
+
+        const pointA = L.latLng(a.location.coordinates.lat, a.location.coordinates.lng);
+        const pointB = L.latLng(b.location.coordinates.lat, b.location.coordinates.lng);
+        
+        const distA = centralPoint.distanceTo(pointA);
+        const distB = centralPoint.distanceTo(pointB);
+        
+        return distA - distB; // Sort by ascending distance
+      }),
+  [filteredResources, localCommuneName, centralPoint]);
 
   const renderResourceTable = (title: string, data: (Resource & { communeName?: string })[], showCommuneCol: boolean) => {
     if (data.length === 0) {
@@ -629,6 +694,11 @@ const ResourceMap: React.FC = () => {
       </div>
 
       <div className="mt-4 flex-shrink-0">
+        {isAnyFilterActive && distanceKm !== DEFAULT_DISTANCE_KM && (
+          <p className="text-sm text-muted-foreground text-center mb-2">
+            Wyświetlanie zasobów w promieniu {distanceKm} km od centrum.
+          </p>
+        )}
         {isAnyFilterActive && (resourcesInLocalCommune.length > 0 || resourcesInOtherCommunes.length > 0) && (
           <>
             {renderResourceTable(`Zasoby w ${localCommuneName} (wg. filtrów)`, resourcesInLocalCommune, false)}

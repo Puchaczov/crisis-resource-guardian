@@ -400,6 +400,468 @@ const gdanskResources: Resource[] = [
 // Add Gdańsk resources to the mock data
 mockResources.push(...gdanskResources);
 
+// Generate resources for Poznań
+const poznanResources: Resource[] = [
+  {
+    id: "pz1",
+    name: "Pompa do wody brudnej",
+    description: "Pompa zanurzeniowa do wody brudnej, wydajność 1000l/min",
+    quantity: 10,
+    unit: "szt",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "Magazyn OSP Poznań-Głuszyna",
+      address: "ul. Głuszyna 188, 61-329 Poznań",
+      coordinates: { lat: 52.3369, lng: 16.9772 }
+    },
+    organization: "Straż Pożarna",
+    lastUpdated: "2024-11-10T09:00:00Z"
+  },
+  {
+    id: "pz2",
+    name: "Śpiwory zimowe",
+    description: "Śpiwory syntetyczne, komfort -10°C",
+    quantity: 200,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Magazyn Obrony Cywilnej Poznań",
+      address: "ul. Libelta 16/20, 61-706 Poznań",
+      coordinates: { lat: 52.4122, lng: 16.9311 }
+    },
+    organization: "Urząd Miasta Poznań",
+    lastUpdated: "2025-01-15T14:30:00Z"
+  },
+  {
+    id: "pz3",
+    name: "Ambulans transportowy",
+    description: "Ambulans typu A, do transportu chorych",
+    quantity: 3,
+    unit: "szt",
+    category: "vehicle",
+    status: "maintenance",
+    location: {
+      name: "Stacja Pogotowia Poznań",
+      address: "ul. Rycerska 10, 60-346 Poznań",
+      coordinates: { lat: 52.3988, lng: 16.8700 }
+    },
+    organization: "Pogotowie Ratunkowe",
+    lastUpdated: "2025-04-20T10:00:00Z",
+    telemetry: { battery: 60, lastSignal: "2025-04-20T09:55:00Z"}
+  }
+];
+mockResources.push(...poznanResources);
+
+// Generate resources for Wrocław
+const wroclawResources: Resource[] = [
+  {
+    id: "wr1",
+    name: "Most pontonowy",
+    description: "Zestaw do budowy mostu pontonowego, nośność 20T",
+    quantity: 1,
+    unit: "zestaw",
+    category: "equipment",
+    status: "reserved",
+    location: {
+      name: "Jednostka Inżynieryjna Wrocław",
+      address: "ul. Obornicka 100, 51-114 Wrocław",
+      coordinates: { lat: 51.1400, lng: 17.0300 }
+    },
+    organization: "Wojsko Polskie",
+    lastUpdated: "2025-02-01T11:00:00Z"
+  },
+  {
+    id: "wr2",
+    name: "Kuchnia polowa KP-340",
+    description: "Kuchnia polowa na przyczepie, wydajność 340 porcji",
+    quantity: 2,
+    unit: "szt",
+    category: "food",
+    status: "available",
+    location: {
+      name: "Magazyn Rezerw Strategicznych Wrocław",
+      address: "ul. Tęczowa 8, 53-601 Wrocław",
+      coordinates: { lat: 51.1079, lng: 17.0385 }
+    },
+    organization: "Rządowa Agencja Rezerw Strategicznych",
+    lastUpdated: "2024-12-05T16:20:00Z"
+  },
+  {
+    id: "wr3",
+    name: "Leki przeciwbólowe i opatrunki",
+    description: "Zestaw podstawowych leków i materiałów opatrunkowych",
+    quantity: 50,
+    unit: "zestaw",
+    category: "medical",
+    status: "available",
+    location: {
+      name: "Punkt Medyczny PCK Wrocław",
+      address: "ul. Bujwida 34, 50-368 Wrocław",
+      coordinates: { lat: 51.1165, lng: 17.0630 }
+    },
+    organization: "Czerwony Krzyż",
+    lastUpdated: "2025-03-10T08:45:00Z"
+  }
+];
+mockResources.push(...wroclawResources);
+
+// Generate resources for Łódź
+const lodzResources: Resource[] = [
+  {
+    id: "ld1",
+    name: "Agregat prądotwórczy 50kVA",
+    description: "Agregat stacjonarny dużej mocy",
+    quantity: 1,
+    unit: "szt",
+    category: "power",
+    status: "available",
+    location: {
+      name: "Elektrociepłownia EC4 Łódź",
+      address: "ul. Rokicińska 140, 92-412 Łódź",
+      coordinates: { lat: 51.7500, lng: 19.5600 }
+    },
+    organization: "PGE Energia Ciepła",
+    lastUpdated: "2025-01-20T13:00:00Z",
+    telemetry: { fuel: 100, temperature: 18, lastSignal: "2025-01-20T12:55:00Z" }
+  },
+  {
+    id: "ld2",
+    name: "Płachty brezentowe",
+    description: "Płachty brezentowe wodoodporne 10x15m",
+    quantity: 150,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Magazyn Budowlany Łódź",
+      address: "ul. Brukowa 25, 91-341 Łódź",
+      coordinates: { lat: 51.8000, lng: 19.4100 }
+    },
+    organization: "Urząd Miasta Łódź",
+    lastUpdated: "2024-10-10T10:10:00Z"
+  }
+];
+mockResources.push(...lodzResources);
+
+// Generate resources for Szczecin
+const szczecinResources: Resource[] = [
+  {
+    id: "sz1",
+    name: "Bariery przeciwpowodziowe mobilne",
+    description: "System mobilnych barier przeciwpowodziowych, 100m",
+    quantity: 5,
+    unit: "zestaw",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "Port Szczecin - Magazyn Zarządu Portu",
+      address: "ul. Bytomska 7, 70-603 Szczecin",
+      coordinates: { lat: 53.4289, lng: 14.5530 }
+    },
+    organization: "Zarząd Morskich Portów Szczecin i Świnoujście",
+    lastUpdated: "2025-03-03T15:00:00Z"
+  },
+  {
+    id: "sz2",
+    name: "Psychologowie kryzysowi",
+    description: "Zespół psychologów specjalizujących się w interwencji kryzysowej",
+    quantity: 3,
+    unit: "zespół",
+    category: "personnel",
+    status: "available",
+    location: {
+      name: "Centrum Interwencji Kryzysowej Szczecin",
+      address: "ul. Sikorskiego 10, 70-313 Szczecin",
+      coordinates: { lat: 53.4250, lng: 14.5400 }
+    },
+    organization: "MOPS Szczecin",
+    lastUpdated: "2025-04-01T12:00:00Z"
+  }
+];
+mockResources.push(...szczecinResources);
+
+// Generate resources for Lublin
+const lublinResources: Resource[] = [
+  {
+    id: "lb1",
+    name: "Cysterna na wodę pitną 10000L",
+    description: "Cysterna samochodowa do transportu wody pitnej",
+    quantity: 2,
+    unit: "szt",
+    category: "water",
+    status: "available",
+    location: {
+      name: "MPWiK Lublin Baza",
+      address: "Al. Jana Pawła II 15, 20-535 Lublin",
+      coordinates: { lat: 51.2300, lng: 22.5000 }
+    },
+    organization: "MPWiK Lublin",
+    lastUpdated: "2024-11-25T14:50:00Z",
+    telemetry: { lastSignal: "2024-11-25T14:45:00Z" }
+  },
+  {
+    id: "lb2",
+    name: "Żywność dla niemowląt i dzieci",
+    description: "Mleko modyfikowane, kaszki, słoiczki",
+    quantity: 500,
+    unit: "kg",
+    category: "food",
+    status: "available",
+    location: {
+      name: "Magazyn Caritas Lublin",
+      address: "ul. Unii Lubelskiej 15, 20-108 Lublin",
+      coordinates: { lat: 51.2500, lng: 22.5700 }
+    },
+    organization: "Caritas Archidiecezji Lubelskiej",
+    lastUpdated: "2025-02-18T10:30:00Z"
+  }
+];
+mockResources.push(...lublinResources);
+
+// Generate resources for Katowice
+const katowiceResources: Resource[] = [
+  {
+    id: "kt1",
+    name: "Sprzęt do ratownictwa górniczego",
+    description: "Aparaty ucieczkowe, detektory gazu, sprzęt hydrauliczny",
+    quantity: 3,
+    unit: "zestaw",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "Centralna Stacja Ratownictwa Górniczego S.A.",
+      address: "ul. Chorzowska 109, 40-101 Katowice",
+      coordinates: { lat: 50.2650, lng: 19.0000 }
+    },
+    organization: "CSRG S.A.",
+    lastUpdated: "2025-03-22T11:15:00Z"
+  },
+  {
+    id: "kt2",
+    name: "Szpital polowy (modułowy)",
+    description: "Modułowy szpital polowy, 50 łóżek, sala operacyjna",
+    quantity: 1,
+    unit: "szt",
+    category: "medical",
+    status: "reserved",
+    location: {
+      name: "Rezerwa Medyczna Katowice",
+      address: "ul. Medyków 16, 40-752 Katowice",
+      coordinates: { lat: 50.2200, lng: 18.9700 }
+    },
+    organization: "Ministerstwo Zdrowia",
+    lastUpdated: "2025-04-10T16:00:00Z"
+  }
+];
+mockResources.push(...katowiceResources);
+
+// Generate resources for Białystok
+const bialystokResources: Resource[] = [
+  {
+    id: "bi1",
+    name: "Pojazd terenowy typu quad z przyczepką",
+    description: "Quad 4x4 z małą przyczepką transportową",
+    quantity: 4,
+    unit: "szt",
+    category: "vehicle",
+    status: "available",
+    location: {
+      name: "Straż Graniczna Białystok",
+      address: "ul. Bema 100, 15-370 Białystok",
+      coordinates: { lat: 53.1200, lng: 23.1800 }
+    },
+    organization: "Straż Graniczna",
+    lastUpdated: "2024-12-15T09:30:00Z",
+    telemetry: { fuel: 80, lastSignal: "2024-12-15T09:25:00Z" }
+  },
+  {
+    id: "bi2",
+    name: "Worki z piaskiem",
+    description: "Gotowe do użycia worki z piaskiem",
+    quantity: 2000,
+    unit: "szt",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "Magazyn Przeciwpowodziowy Białystok",
+      address: "ul. Produkcyjna 110, 15-680 Białystok",
+      coordinates: { lat: 53.1500, lng: 23.0800 }
+    },
+    organization: "Urząd Miasta Białystok",
+    lastUpdated: "2025-01-05T12:00:00Z"
+  }
+];
+mockResources.push(...bialystokResources);
+
+// Generate resources for Gdynia
+const gdyniaResources: Resource[] = [
+  {
+    id: "gy1",
+    name: "Sprzęt do ratownictwa morskiego",
+    description: "Pławy ratunkowe, tratwy, kombinezony ratunkowe",
+    quantity: 10,
+    unit: "zestaw",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "SAR Gdynia",
+      address: "ul. Polska 1, 81-339 Gdynia",
+      coordinates: { lat: 54.5200, lng: 18.5300 }
+    },
+    organization: "Morska Służba Poszukiwania i Ratownictwa",
+    lastUpdated: "2025-03-18T14:00:00Z"
+  },
+  {
+    id: "gy2",
+    name: "Radiotelefony cyfrowe DMR",
+    description: "Zestaw radiotelefonów cyfrowych z ładowarkami",
+    quantity: 50,
+    unit: "szt",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "Zarządzanie Kryzysowe Gdynia",
+      address: "Al. Marszałka Piłsudskiego 52/54, 81-382 Gdynia",
+      coordinates: { lat: 54.5150, lng: 18.5400 }
+    },
+    organization: "Urząd Miasta Gdynia",
+    lastUpdated: "2024-11-30T10:45:00Z",
+    telemetry: { battery: 98, lastSignal: "2024-11-30T10:40:00Z" }
+  }
+];
+mockResources.push(...gdyniaResources);
+
+// Generate resources for Częstochowa
+const czestochowaResources: Resource[] = [
+  {
+    id: "cz1",
+    name: "Oświetlenie awaryjne masztowe",
+    description: "Przenośne maszty oświetleniowe z agregatem",
+    quantity: 6,
+    unit: "szt",
+    category: "power",
+    status: "available",
+    location: {
+      name: "PSP Częstochowa JRG 1",
+      address: "ul. Legionów 56, 42-200 Częstochowa",
+      coordinates: { lat: 50.8000, lng: 19.1200 }
+    },
+    organization: "Straż Pożarna",
+    lastUpdated: "2025-02-28T13:30:00Z",
+    telemetry: { fuel: 90, lastSignal: "2025-02-28T13:25:00Z" }
+  }
+];
+mockResources.push(...czestochowaResources);
+
+// Generate resources for Radom
+const radomResources: Resource[] = [
+  {
+    id: "ra1",
+    name: "Paliwo (diesel) w zbiornikach mobilnych",
+    description: "Zbiorniki mobilne z olejem napędowym, 1000L każdy",
+    quantity: 5,
+    unit: "zbiornik",
+    category: "equipment",
+    status: "available",
+    location: {
+      name: "Baza Paliw Radom",
+      address: "ul. Warszawska 220, 26-600 Radom",
+      coordinates: { lat: 51.4300, lng: 21.1800 }
+    },
+    organization: "PKN Orlen",
+    lastUpdated: "2025-04-05T09:00:00Z"
+  }
+];
+mockResources.push(...radomResources);
+
+// Generate resources for Toruń
+const torunResources: Resource[] = [
+  {
+    id: "to1",
+    name: "Zestawy pierwszej pomocy (rozszerzone)",
+    description: "Apteczki R1 z dodatkowym wyposażeniem",
+    quantity: 30,
+    unit: "szt",
+    category: "medical",
+    status: "available",
+    location: {
+      name: "Szpital Miejski Toruń",
+      address: "ul. Batorego 17/19, 87-100 Toruń",
+      coordinates: { lat: 53.0100, lng: 18.6000 }
+    },
+    organization: "Urząd Miasta Toruń",
+    lastUpdated: "2025-01-10T11:20:00Z"
+  }
+];
+mockResources.push(...torunResources);
+
+// Generate resources for Rzeszów
+const rzeszowResources: Resource[] = [
+  {
+    id: "rz1",
+    name: "Drony z kamerą termowizyjną",
+    description: "Drony obserwacyjne z kamerami termowizyjnymi i standardowymi",
+    quantity: 2,
+    unit: "szt",
+    category: "equipment",
+    status: "maintenance",
+    location: {
+      name: "Podkarpackie Centrum Ratownictwa Medycznego",
+      address: "ul. Poniatowskiego 4, 35-026 Rzeszów",
+      coordinates: { lat: 50.0300, lng: 22.0000 }
+    },
+    organization: "Urząd Marszałkowski Województwa Podkarpackiego",
+    lastUpdated: "2025-04-15T10:00:00Z",
+    telemetry: { battery: 40, lastSignal: "2025-04-15T09:50:00Z" }
+  }
+];
+mockResources.push(...rzeszowResources);
+
+// Generate resources for Olsztyn
+const olsztynResources: Resource[] = [
+  {
+    id: "ol1",
+    name: "Sanitariaty przenośne",
+    description: "Kontenery sanitarne z prysznicami i toaletami",
+    quantity: 4,
+    unit: "kontener",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Zakład Gospodarki Komunalnej Olsztyn",
+      address: "ul. Lubelska 46, 10-409 Olsztyn",
+      coordinates: { lat: 53.7700, lng: 20.4900 }
+    },
+    organization: "Urząd Miasta Olsztyn",
+    lastUpdated: "2024-10-20T15:00:00Z"
+  }
+];
+mockResources.push(...olsztynResources);
+
+// Generate resources for Bydgoszcz
+const bydgoszczResources: Resource[] = [
+  {
+    id: "by1",
+    name: "Pojazdy ciężarowe z HDS",
+    description: "Samochody ciężarowe z hydraulicznym dźwigiem samochodowym",
+    quantity: 3,
+    unit: "szt",
+    category: "vehicle",
+    status: "available",
+    location: {
+      name: "Baza Transportowa Bydgoszcz",
+      address: "ul. Przemysłowa 34, 85-758 Bydgoszcz",
+      coordinates: { lat: 53.1300, lng: 18.0000 }
+    },
+    organization: "Poczta Polska",
+    lastUpdated: "2025-03-01T08:00:00Z",
+    telemetry: { fuel: 75, lastSignal: "2025-03-01T07:55:00Z" }
+  }
+];
+mockResources.push(...bydgoszczResources);
+
 export const getAllResources = (): Promise<Resource[]> => {
   return Promise.resolve([...mockResources]);
 };
@@ -566,7 +1028,27 @@ export const resourceOrganizations: { value: string; label: string }[] = [
   { value: 'Urząd Wojewódzki', label: 'Urząd Wojewódzki' },
   { value: 'WOPR', label: 'WOPR' },
   { value: 'Urząd Miasta Kraków', label: 'Urząd Miasta Kraków' },
-  { value: 'Urząd Wojewódzki Pomorski', label: 'Urząd Wojewódzki Pomorski' }
+  { value: 'Urząd Wojewódzki Pomorski', label: 'Urząd Wojewódzki Pomorski' },
+  { value: 'Wojsko Polskie', label: 'Wojsko Polskie' },
+  { value: 'Rządowa Agencja Rezerw Strategicznych', label: 'Rządowa Agencja Rezerw Strategicznych' },
+  { value: 'PGE Energia Ciepła', label: 'PGE Energia Ciepła' },
+  { value: 'Zarząd Morskich Portów Szczecin i Świnoujście', label: 'Zarząd Morskich Portów Szczecin i Świnoujście' },
+  { value: 'MOPS Szczecin', label: 'MOPS Szczecin' },
+  { value: 'MPWiK Lublin', label: 'MPWiK Lublin' },
+  { value: 'Caritas Archidiecezji Lubelskiej', label: 'Caritas Archidiecezji Lubelskiej' },
+  { value: 'CSRG S.A.', label: 'CSRG S.A.' },
+  { value: 'Ministerstwo Zdrowia', label: 'Ministerstwo Zdrowia' },
+  { value: 'Straż Graniczna', label: 'Straż Graniczna' },
+  { value: 'Morska Służba Poszukiwania i Ratownictwa', label: 'Morska Służba Poszukiwania i Ratownictwa' },
+  { value: 'PKN Orlen', label: 'PKN Orlen' },
+  { value: 'Urząd Marszałkowski Województwa Podkarpackiego', label: 'Urząd Marszałkowski Województwa Podkarpackiego' },
+  { value: 'Poczta Polska', label: 'Poczta Polska' },
+  { value: 'Urząd Miasta Poznań', label: 'Urząd Miasta Poznań' },
+  { value: 'Urząd Miasta Łódź', label: 'Urząd Miasta Łódź' },
+  { value: 'Urząd Miasta Białystok', label: 'Urząd Miasta Białystok' },
+  { value: 'Urząd Miasta Gdynia', label: 'Urząd Miasta Gdynia' },
+  { value: 'Urząd Miasta Toruń', label: 'Urząd Miasta Toruń' },
+  { value: 'Urząd Miasta Olsztyn', label: 'Urząd Miasta Olsztyn' }
 ];
 
 export const getResourceStats = async () => {
@@ -589,4 +1071,4 @@ export const commune: {
   name: string;
 } = {
   name: 'Warszawa'
-}
+};

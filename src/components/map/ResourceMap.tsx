@@ -82,7 +82,7 @@ const getBadgeVariantForStatus = (status: ResourceStatus): "default" | "secondar
   }
 };
 
-const DEFAULT_DISTANCE_KM = 500;
+const DEFAULT_DISTANCE_KM = 1000; // Changed from 500 to 1000
 const CENTRAL_FIXED_POINT_LAT = 52.2297;
 const CENTRAL_FIXED_POINT_LNG = 21.0122;
 
@@ -105,7 +105,9 @@ const ResourceMap: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
   const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]);
-  const mapRef = useRef<L.Map | null>(null);
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+
+  const radiusCircleRef = useRef<L.Circle | null>(null); // Added for search radius circle
 
   // Moved isAnyFilterActive earlier to be available for the radius circle effect
   const isAnyFilterActive = React.useMemo(() => 
@@ -116,8 +118,6 @@ const ResourceMap: React.FC = () => {
     distanceKm !== DEFAULT_DISTANCE_KM,
     [search, category, status, organization, distanceKm]
   );
-
-  const radiusCircleRef = useRef<L.Circle | null>(null); // Added for search radius circle
 
   // Effect for fetching initial resources
   useEffect(() => {
@@ -277,8 +277,7 @@ const ResourceMap: React.FC = () => {
 
   // Effect for drawing/updating search radius circle on map
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) {
+    if (!mapInstance) {
       if (radiusCircleRef.current) {
         try {
           radiusCircleRef.current.remove();
@@ -306,21 +305,21 @@ const ResourceMap: React.FC = () => {
         weight: 1.5,
         dashArray: '10, 5',
         interactive: false, // So it doesn't capture mouse events
-      }).addTo(map);
+      }).addTo(mapInstance);
       radiusCircleRef.current = newCircle;
     }
     // Cleanup function to remove circle when component unmounts or dependencies change significantly
     return () => {
-      if (radiusCircleRef.current && mapRef.current) { // Check mapRef.current as map might be gone
+      if (radiusCircleRef.current) {
         try {
             radiusCircleRef.current.remove();
         } catch (e) {
             // console.warn("Error removing circle on cleanup:", e);
         }
+        radiusCircleRef.current = null;
       }
-      radiusCircleRef.current = null;
     };
-  }, [centralPoint, distanceKm, isAnyFilterActive, DEFAULT_DISTANCE_KM, mapRef]); // mapRef itself as dependency
+  }, [mapInstance, centralPoint, distanceKm, isAnyFilterActive, DEFAULT_DISTANCE_KM]); // Use mapInstance in dependencies
 
   // Effect for updating URL when filters change
   useEffect(() => {
@@ -364,13 +363,12 @@ const ResourceMap: React.FC = () => {
 
   // Effect for centering map on filtered resources
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
+    if (!mapInstance) return;
 
     if (filteredResources.length > 0) {
       if (filteredResources.length === 1) {
         const resource = filteredResources[0];
-        map.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 13);
+        mapInstance.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 13);
       } else {
         const bounds = L.latLngBounds(
           filteredResources.map(resource => [
@@ -379,16 +377,16 @@ const ResourceMap: React.FC = () => {
           ])
         );
         if (bounds.isValid()) {
-          map.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+          mapInstance.flyToBounds(bounds, { padding: [50, 50], maxZoom: 16 });
         }
       }
     }
-  }, [filteredResources]);
+  }, [filteredResources, mapInstance]);
 
   const handleResourceClick = (resource: (Resource & { communeName?: string }) | null) => {
     setSelectedResource(resource);
-    if (resource && mapRef.current) {
-      mapRef.current.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 14);
+    if (resource && mapInstance) {
+      mapInstance.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 14);
     }
   };
 
@@ -541,7 +539,7 @@ const ResourceMap: React.FC = () => {
                       type="range"
                       id="distanceKm"
                       min="1"
-                      max="500"
+                      max="1000" // Changed from 500 to 1000
                       value={distanceKm}
                       onChange={(e) => setDistanceKm(parseInt(e.target.value, 10))}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -613,7 +611,11 @@ const ResourceMap: React.FC = () => {
                     </div>
                   ) : (
                     <MapContainer 
-                      ref={mapRef}
+                      ref={(instance) => { // Use the ref callback to get the map instance
+                        if (instance) {
+                          setMapInstance(instance);
+                        }
+                      }}
                       center={[52.2297, 21.0122]} 
                       zoom={6} 
                       scrollWheelZoom={true} 

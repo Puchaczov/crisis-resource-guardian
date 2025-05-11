@@ -1,5 +1,5 @@
-
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -25,7 +25,9 @@ interface AppHeaderProps {
 
 const AppHeader: React.FC<AppHeaderProps> = ({ user }) => {
   const { logout } = useAuth();
-  
+  const [searchValue, setSearchValue] = useState("");
+  const navigate = useNavigate();
+
   // Get user initials for avatar fallback
   const getInitials = (name: string) => {
     return name
@@ -33,6 +35,30 @@ const AppHeader: React.FC<AppHeaderProps> = ({ user }) => {
       .map((part) => part[0])
       .join("")
       .toUpperCase();
+  };
+
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      const query = searchValue.trim();
+      const regex = /potrzebuję\s+(\d+)\s+(.*?)\s+w promieniu\s+(\d+)km/i;
+      const match = query.match(regex);
+
+      if (match) {
+        let resourceQuery = match[2].toLowerCase();
+        const distance = match[3];
+
+        let resourceSearchTerm = "";
+        if (resourceQuery === "łóżek") {
+          resourceSearchTerm = "Łóżka polowe";
+        } else {
+          resourceSearchTerm = resourceQuery;
+        }
+
+        if (resourceSearchTerm && distance) {
+          navigate(`/map?search=${encodeURIComponent(resourceSearchTerm)}&distanceKm=${distance}`);
+        }
+      }
+    }
   };
 
   return (
@@ -46,6 +72,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ user }) => {
               type="text"
               placeholder="Szukaj zasobów, lokalizacji..."
               className="pl-10 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
             />
           </div>
         </div>

@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Bell, CheckCircle, XCircle, X } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle, XCircle, X, Zap, Droplet, HeartPulse, Truck, Home, Utensils, Users, Wrench, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import * as alertService from "@/services/alertsService";
-
-type AlertSeverity = 'critical' | 'warning' | 'info';
-
-interface SystemAlert {
-  id: string;
-  title: string;
-  description: string;
-  severity: AlertSeverity;
-  timestamp: string;
-  actionLink?: string;
-  actionText?: string;
-  dismissed?: boolean;
-}
+import { getCategoryStyle } from '@/services/alertsService';
+import { ResourceCategory } from '@/types/resources';
+import { AlertSeverity, SystemAlert } from "@/services/alertsService";
 
 const SystemAlerts: React.FC = () => {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
@@ -74,6 +64,21 @@ const SystemAlerts: React.FC = () => {
     }
   };
 
+  const getCategoryIcon = (category?: ResourceCategory) => {
+    const style = getCategoryStyle(category);
+    switch (style.icon) {
+      case 'zap': return <Zap className={`h-5 w-5 ${style.textColor}`} />;
+      case 'droplet': return <Droplet className={`h-5 w-5 ${style.textColor}`} />;
+      case 'heart-pulse': return <HeartPulse className={`h-5 w-5 ${style.textColor}`} />;
+      case 'truck': return <Truck className={`h-5 w-5 ${style.textColor}`} />;
+      case 'home': return <Home className={`h-5 w-5 ${style.textColor}`} />;
+      case 'utensils': return <Utensils className={`h-5 w-5 ${style.textColor}`} />;
+      case 'users': return <Users className={`h-5 w-5 ${style.textColor}`} />;
+      case 'wrench': return <Wrench className={`h-5 w-5 ${style.textColor}`} />;
+      default: return <AlertCircle className={`h-5 w-5 ${style.textColor}`} />;
+    }
+  };
+
   const getSeverityStyle = (severity: AlertSeverity) => {
     switch (severity) {
       case 'critical':
@@ -83,6 +88,11 @@ const SystemAlerts: React.FC = () => {
       case 'info':
         return 'border-blue-500/50 bg-blue-500/10';
     }
+  };
+
+  const getSeverityClass = (severity: AlertSeverity) => {
+    const style = alertService.getSeverityColor(severity);
+    return `${style.bg} ${style.text}`;
   };
 
   const getTopAlerts = (allAlerts: SystemAlert[]): SystemAlert[] => {
@@ -175,11 +185,11 @@ const SystemAlerts: React.FC = () => {
             getTopAlerts(alerts).map((alert) => (
               <Alert 
                 key={alert.id} 
-                className={`${getSeverityStyle(alert.severity)} relative`}
+                className={`${getSeverityStyle(alert.severity)} ${getCategoryStyle(alert.category).bgColor} relative`}
                 role="listitem"
               >
                 <div className="flex items-start gap-3">
-                  {getSeverityIcon(alert.severity)}
+                  {alert.category ? getCategoryIcon(alert.category) : getSeverityIcon(alert.severity)}
                   <div className="flex-1">
                     <AlertTitle>{alert.title}</AlertTitle>
                     <AlertDescription className="mt-1">

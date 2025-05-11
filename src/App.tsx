@@ -10,6 +10,7 @@ import Login from "@/pages/Login";
 import MapPage from "@/pages/MapPage";
 import ResourcesPage from "@/pages/ResourcesPage";
 import AddResourcePage from "@/pages/AddResourcePage";
+import EditResourcePage from "@/pages/EditResourcePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import IntegrationsPage from "@/pages/IntegrationsPage";
 import EmergencyActionsPage from "@/pages/EmergencyActionsPage";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/map" element={<MapPage />} />
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/add-resource" element={<AddResourcePage />} />
+              <Route path="/resources/:id/edit" element={<EditResourcePage />} />
               
               {/* Add additional routes as needed */}
               <Route path="/import" element={<div className="p-4">Import danych - strona w budowie</div>} />

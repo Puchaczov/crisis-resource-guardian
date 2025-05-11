@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, AlertCircle, Info, Bell, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle2, XCircle, X, Zap, Droplet, HeartPulse, Truck, Home, Utensils, Users, Wrench, AlertCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +10,12 @@ import {
   dismissAllAlerts,
   SystemAlert,
   AlertSeverity,
-  getSeverityLabel
+  getSeverityLabel,
+  getSeverityColor,
+  getCategoryStyle,
+  getCategoryLabel
 } from '@/services/alertsService';
+import { ResourceCategory } from '@/types/resources';
 
 const AlertsPage = () => {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
@@ -55,13 +59,22 @@ const AlertsPage = () => {
   };
 
   const getSeverityClass = (severity: AlertSeverity) => {
-    switch (severity) {
-      case 'critical':
-        return 'bg-destructive/10 text-destructive';
-      case 'warning':
-        return 'bg-warning/10 text-warning-dark';
-      case 'info':
-        return 'bg-blue-500/10 text-blue-600';
+    const style = getSeverityColor(severity);
+    return `${style.bg} ${style.text}`;
+  };
+
+  const getCategoryIcon = (category?: ResourceCategory) => {
+    const style = getCategoryStyle(category);
+    switch (style.icon) {
+      case 'zap': return <Zap className={`h-5 w-5 ${style.textColor}`} />;
+      case 'droplet': return <Droplet className={`h-5 w-5 ${style.textColor}`} />;
+      case 'heart-pulse': return <HeartPulse className={`h-5 w-5 ${style.textColor}`} />;
+      case 'truck': return <Truck className={`h-5 w-5 ${style.textColor}`} />;
+      case 'home': return <Home className={`h-5 w-5 ${style.textColor}`} />;
+      case 'utensils': return <Utensils className={`h-5 w-5 ${style.textColor}`} />;
+      case 'users': return <Users className={`h-5 w-5 ${style.textColor}`} />;
+      case 'wrench': return <Wrench className={`h-5 w-5 ${style.textColor}`} />;
+      default: return <AlertCircle className={`h-5 w-5 ${style.textColor}`} />;
     }
   };
 
@@ -96,10 +109,13 @@ const AlertsPage = () => {
       ) : (
         <div className="grid gap-4">
           {alerts.map((alert) => (
-            <Card key={alert.id} className={`${alert.dismissed ? 'opacity-60' : ''}`}>
+            <Card 
+              key={alert.id} 
+              className={`${alert.dismissed ? 'opacity-60' : ''} ${getCategoryStyle(alert.category).bgColor}`}
+            >
               <CardHeader className="flex flex-row items-start justify-between space-y-0">
                 <div className="flex items-start gap-4">
-                  {getSeverityIcon(alert.severity)}
+                  {alert.category ? getCategoryIcon(alert.category) : getSeverityIcon(alert.severity)}
                   <div>
                     <CardTitle className="text-base">{alert.title}</CardTitle>
                     <CardDescription className="mt-1.5">
@@ -108,7 +124,17 @@ const AlertsPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={getSeverityClass(alert.severity)}>
+                  {alert.category && (
+                    <Badge 
+                      variant="secondary"
+                      className={`${getCategoryStyle(alert.category).bgColor} ${getCategoryStyle(alert.category).textColor}`}
+                    >
+                      {getCategoryLabel(alert.category)}
+                    </Badge>
+                  )}
+                  <Badge 
+                    className={getSeverityClass(alert.severity)}
+                  >
                     {getSeverityLabel(alert.severity)}
                   </Badge>
                   {!alert.dismissed && (
@@ -124,11 +150,11 @@ const AlertsPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center text-sm">
-                  <div className="text-muted-foreground">
+                  <div className={`text-muted-foreground ${getCategoryStyle(alert.category).textColor}`}>
                     {new Date(alert.timestamp).toLocaleString('pl-PL')}
                   </div>
                   {alert.actionLink && (
-                    <Button variant="link" asChild className="p-0">
+                    <Button variant="link" asChild className={`p-0 ${getCategoryStyle(alert.category).textColor}`}>
                       <Link to={alert.actionLink}>{alert.actionText}</Link>
                     </Button>
                   )}

@@ -42,36 +42,41 @@ const AppHeader: React.FC<AppHeaderProps> = ({ user }) => {
       const originalQuery = searchValue.trim();
       const query = originalQuery.toLowerCase(); // Normalize query to lowercase for matching
 
-      // Regex to find "łóżko" or "łóżek", optionally preceded by a number,
-      // and optionally followed by "zasięg" and a distance in km.
-      // Examples:
-      // "300 łóżek" -> quantity: "300", keyword: "łóżek", distance: undefined
-      // "łóżko" -> quantity: undefined, keyword: "łóżko", distance: undefined
-      // "łóżko zasięg 50km" -> quantity: undefined, keyword: "łóżko", distance: "50"
-      // "10 łóżek zasięg 100 km" -> quantity: "10", keyword: "łóżek", distance: "100"
-      // "10 łóżek, zasięg 100 km" -> quantity: "10", keyword: "łóżek", distance: "100"
-      const lozkoPattern = /^(?:(\d+)\s+)?(łóżko|łóżek)(?:,?\s+zasięg\s+(\d+)\s*km)?$/i;
-      const match = query.match(lozkoPattern);
+      // Introduce a random delay between 1 and 3 seconds
+      const delay = Math.random() * 2000 + 1000; // Random delay in milliseconds
 
-      if (match) {
-        // const quantity = match[1]; // Captured if needed, e.g., for a quantity filter
-        // const keyword = match[2]; // "łóżko" or "łóżek"
-        const distance = match[3]; // Captured distance, or undefined
+      setTimeout(() => {
+        // Regex to find "łóżko" or "łóżek", optionally preceded by a number,
+        // and optionally followed by "zasięg" and a distance in km.
+        // Examples:
+        // "300 łóżek" -> quantity: "300", keyword: "łóżek", distance: undefined
+        // "łóżko" -> quantity: undefined, keyword: "łóżko", distance: undefined
+        // "łóżko zasięg 50km" -> quantity: undefined, keyword: "łóżko", distance: "50"
+        // "10 łóżek zasięg 100 km" -> quantity: "10", keyword: "łóżek", distance: "100"
+        // "10 łóżek, zasięg 100 km" -> quantity: "10", keyword: "łóżek", distance: "100"
+        const lozkoPattern = /^(?:(\d+)\s+)?(łóżko|łóżek)(?:,?\s+zasięg\s+(\d+)\s*km)?$/i;
+        const match = query.match(lozkoPattern);
 
-        const searchTerm = "Łóżka polowe";
-        
-        if (distance) {
-          navigate(`/map?search=${encodeURIComponent(searchTerm)}&distanceKm=${distance}`);
+        if (match) {
+          // const quantity = match[1]; // Captured if needed, e.g., for a quantity filter
+          // const keyword = match[2]; // "łóżko" or "łóżek"
+          const distance = match[3]; // Captured distance, or undefined
+
+          const searchTerm = "Łóżka polowe";
+          
+          if (distance) {
+            navigate(`/map?search=${encodeURIComponent(searchTerm)}&distanceKm=${distance}`);
+          } else {
+            navigate(`/map?search=${encodeURIComponent(searchTerm)}`);
+          }
         } else {
-          navigate(`/map?search=${encodeURIComponent(searchTerm)}`);
+          // If the specific "łóżko" pattern doesn't match, treat as a generic search.
+          // Use the original query to preserve casing for general search terms.
+          if (originalQuery) {
+            navigate(`/map?search=${encodeURIComponent(originalQuery)}`);
+          }
         }
-      } else {
-        // If the specific "łóżko" pattern doesn't match, treat as a generic search.
-        // Use the original query to preserve casing for general search terms.
-        if (originalQuery) {
-          navigate(`/map?search=${encodeURIComponent(originalQuery)}`);
-        }
-      }
+      }, delay);
     }
   };
 

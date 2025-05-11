@@ -82,7 +82,10 @@ const getBadgeVariantForStatus = (status: ResourceStatus): "default" | "secondar
   }
 };
 
-const DEFAULT_DISTANCE_KM = 1000; // Changed from 500 to 1000
+const DEFAULT_DISTANCE_KM = 500; // Adjust as per your application's default
+const MIN_DISTANCE_KM = 10;    // Adjust as per your application's minimum
+const MAX_DISTANCE_KM = 1000;  // Adjust as per your application's maximum;
+
 const CENTRAL_FIXED_POINT_LAT = 52.2297;
 const CENTRAL_FIXED_POINT_LNG = 21.0122;
 
@@ -93,27 +96,42 @@ const ResourceMap: React.FC = () => {
   
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || 'all');
-  const [status, setStatus] = useState(searchParams.get('status') || 'all');
-  const [organization, setOrganization] = useState(searchParams.get('organization') || 'all');
-  const [distanceKm, setDistanceKm] = useState<number>(() => {
-    const dParam = searchParams.get('distanceKm');
-    return dParam ? parseInt(dParam, 10) : DEFAULT_DISTANCE_KM;
+  const [search, setSearch] = useState(() => searchParams.get('search') || '');
+  const [category, setCategory] = useState(() => searchParams.get('category') || 'all');
+  const [status, setStatus] = useState(() => searchParams.get('status') || 'all');
+  const [organization, setOrganization] = useState(() => searchParams.get('organization') || 'all');
+  const [distanceKm, setDistanceKm] = useState(() => {
+    const distStr = searchParams.get('distanceKm');
+    const numDist = distStr ? parseInt(distStr, 10) : DEFAULT_DISTANCE_KM;
+    return Math.max(MIN_DISTANCE_KM, Math.min(MAX_DISTANCE_KM, isNaN(numDist) ? DEFAULT_DISTANCE_KM : numDist));
   });
 
-  // Effect to synchronize local filter state from URL searchParams
+  // Effect to synchronize local state FROM URL searchParams when they change after initial load
   useEffect(() => {
-    setSearch(searchParams.get('search') || '');
-    setCategory(searchParams.get('category') || 'all');
-    setStatus(searchParams.get('status') || 'all');
-    setOrganization(searchParams.get('organization') || 'all');
-    
-    const dParam = searchParams.get('distanceKm');
-    const newDistanceKm = dParam ? parseInt(dParam, 10) : DEFAULT_DISTANCE_KM;
-    setDistanceKm(newDistanceKm);
+    const urlSearch = searchParams.get('search') || '';
+    setSearch(prevSearch => prevSearch !== urlSearch ? urlSearch : prevSearch);
 
-  }, [searchParams]); // Rerun when searchParams object changes
+    const urlCategory = searchParams.get('category') || 'all';
+    setCategory(prevCategory => prevCategory !== urlCategory ? urlCategory : prevCategory);
+
+    const urlStatus = searchParams.get('status') || 'all';
+    setStatus(prevStatus => prevStatus !== urlStatus ? urlStatus : prevStatus);
+
+    const urlOrganization = searchParams.get('organization') || 'all';
+    setOrganization(prevOrganization => prevOrganization !== urlOrganization ? urlOrganization : prevOrganization);
+
+    const urlDistanceStr = searchParams.get('distanceKm');
+    let newDistanceValue;
+    if (urlDistanceStr === null) { // If distanceKm is NOT in URL, local state should be default
+      newDistanceValue = DEFAULT_DISTANCE_KM;
+    } else {
+      const parsedNum = parseInt(urlDistanceStr, 10);
+      // If parsing fails or param is invalid, default; otherwise, clamp the parsed number
+      newDistanceValue = isNaN(parsedNum) ? DEFAULT_DISTANCE_KM : Math.max(MIN_DISTANCE_KM, Math.min(MAX_DISTANCE_KM, parsedNum));
+    }
+    setDistanceKm(prevDistance => prevDistance !== newDistanceValue ? newDistanceValue : prevDistance);
+
+  }, [searchParams]); // This effect runs when searchParams object instance changes.
 
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
@@ -494,6 +512,11 @@ const ResourceMap: React.FC = () => {
     setDistanceKm(DEFAULT_DISTANCE_KM);
   };
 
+  const handleDistanceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newDistance = parseInt(event.target.value, 10);
+    setDistanceKm(Math.max(MIN_DISTANCE_KM, Math.min(MAX_DISTANCE_KM, newDistance)));
+  };
+
   const localCommuneName = commune.name;
 
   const resourcesInLocalCommune = React.useMemo(() =>
@@ -634,10 +657,10 @@ const ResourceMap: React.FC = () => {
                     <Input
                       type="range"
                       id="distanceKm"
-                      min="1"
-                      max="1000" // Changed from 500 to 1000
+                      min={MIN_DISTANCE_KM}
+                      max={MAX_DISTANCE_KM}
                       value={distanceKm}
-                      onChange={(e) => setDistanceKm(parseInt(e.target.value, 10))}
+                      onChange={handleDistanceChange}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                     />
                   </div>
@@ -755,7 +778,10 @@ const ResourceMap: React.FC = () => {
                         </Marker>
                       ))}
                       {selectedResource && (
-                         <Popup position={[selectedResource.location.coordinates.lat, selectedResource.location.coordinates.lng]}>
+                         <Popup 
+                           position={[selectedResource.location.coordinates.lat, selectedResource.location.coordinates.lng]}
+                           autoPan={false} // Disable auto-panning
+                         >
                            <div className="w-80">
                             <ResourceMarkerPopup
                               resource={selectedResource}

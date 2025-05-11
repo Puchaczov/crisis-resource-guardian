@@ -170,6 +170,11 @@
           },
           "resources_required": [
             {
+              "resource_name": "Łóżka i namoty do ewakuacji",
+              "quantity_needed": 1000,
+              "resource_type": "Transport"
+            },
+            {
               "resource_name": "Pojazdy transportowe do dostarczania wody",
               "quantity_needed": 6,
               "resource_type": "Transport"

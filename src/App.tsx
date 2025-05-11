@@ -15,6 +15,7 @@ import NotFoundPage from "@/pages/NotFoundPage";
 import IntegrationsPage from "@/pages/IntegrationsPage";
 import EmergencyActionsPage from "@/pages/EmergencyActionsPage";
 import AlertsPage from "@/pages/AlertsPage";
+import OrdersPage from "@/pages/OrdersPage";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/resources" element={<ResourcesPage />} />
               <Route path="/add-resource" element={<AddResourcePage />} />
               <Route path="/resources/:id/edit" element={<EditResourcePage />} />
+              <Route path="/orders" element={<OrdersPage />} />
               
               {/* Add additional routes as needed */}
               <Route path="/import" element={<div className="p-4">Import danych - strona w budowie</div>} />

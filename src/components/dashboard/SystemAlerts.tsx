@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Bell, CheckCircle, XCircle, X, Zap, Droplet, HeartPulse, Truck, Home, Utensils, Users, Wrench, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Bell, CheckCircle, XCircle, X, Zap, Droplet, HeartPulse, Truck, Home, Utensils, Users, Wrench, AlertCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import * as alertService from "@/services/alertsService";
-import { getCategoryStyle } from '@/services/alertsService';
+import { getCategoryStyle, getSeverityLabel } from '@/services/alertsService';
 import { ResourceCategory } from '@/types/resources';
-import { AlertSeverity, SystemAlert } from "@/services/alertsService";
+import { getAlertStyles } from '@/utils/alertStyles';
+import { AlertSeverity, SystemAlert } from '@/types/alerts';
 
 const SystemAlerts: React.FC = () => {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
@@ -54,13 +56,14 @@ const SystemAlerts: React.FC = () => {
   }, []);
 
   const getSeverityIcon = (severity: AlertSeverity) => {
+    const styles = getAlertStyles(severity);
     switch (severity) {
       case 'critical':
-        return <XCircle className="h-5 w-5 text-destructive" />;
+        return <XCircle className={`h-5 w-5 ${styles.text}`} />;
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-warning" />;
+        return <AlertTriangle className={`h-5 w-5 ${styles.text}`} />;
       case 'info':
-        return <Bell className="h-5 w-5 text-blue-500" />;
+        return <Info className={`h-5 w-5 ${styles.text}`} />;
     }
   };
 
@@ -80,19 +83,8 @@ const SystemAlerts: React.FC = () => {
   };
 
   const getSeverityStyle = (severity: AlertSeverity) => {
-    switch (severity) {
-      case 'critical':
-        return 'border-destructive/50 bg-destructive/10';
-      case 'warning':
-        return 'border-warning/50 bg-warning/10';
-      case 'info':
-        return 'border-blue-500/50 bg-blue-500/10';
-    }
-  };
-
-  const getSeverityClass = (severity: AlertSeverity) => {
-    const style = alertService.getSeverityColor(severity);
-    return `${style.bg} ${style.text}`;
+    const styles = getAlertStyles(severity);
+    return `${styles.border} ${styles.bg}`;
   };
 
   const getTopAlerts = (allAlerts: SystemAlert[]): SystemAlert[] => {
@@ -117,11 +109,11 @@ const SystemAlerts: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Alerty systemowe
+            Powiadomienia systemowe
           </CardTitle>
         </CardHeader>
         <CardContent className="py-6">
-          <p className="text-center text-muted-foreground">Ładowanie alertów...</p>
+          <p className="text-center text-muted-foreground">Ładowanie powiadomień...</p>
         </CardContent>
       </Card>
     );
@@ -133,7 +125,7 @@ const SystemAlerts: React.FC = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Alerty systemowe
+            Powiadomienia systemowe
           </CardTitle>
           <div className="flex items-center gap-2">
             {alerts.length > 0 && (
@@ -167,7 +159,7 @@ const SystemAlerts: React.FC = () => {
         </div>
         <CardDescription>
           {alerts.length > 0 
-            ? `${Math.min(alerts.length, 3)} z ${alerts.length} ${alerts.length === 1 ? 'alertu wymaga' : 'alertów wymaga'} uwagi`
+            ? `${Math.min(alerts.length, 3)} z ${alerts.length} ${alerts.length === 1 ? 'powiadomienia wymaga' : 'powiadomień wymaga'} uwagi`
             : 'Wszystkie systemy działają prawidłowo'
           }
         </CardDescription>
@@ -178,7 +170,7 @@ const SystemAlerts: React.FC = () => {
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
               <p className="text-muted-foreground">
-                Aktualnie nie ma alertów wymagających uwagi
+                Aktualnie nie ma powiadomień wymagających uwagi
               </p>
             </div>
           ) : (
@@ -191,7 +183,12 @@ const SystemAlerts: React.FC = () => {
                 <div className="flex items-start gap-3">
                   {alert.category ? getCategoryIcon(alert.category) : getSeverityIcon(alert.severity)}
                   <div className="flex-1">
-                    <AlertTitle>{alert.title}</AlertTitle>
+                    <AlertTitle className="flex items-center gap-2">
+                      {alert.title}
+                      <Badge className={getAlertStyles(alert.severity).badge}>
+                        {getSeverityLabel(alert.severity)}
+                      </Badge>
+                    </AlertTitle>
                     <AlertDescription className="mt-1">
                       {alert.description}
                     </AlertDescription>

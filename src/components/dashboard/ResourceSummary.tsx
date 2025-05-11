@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getResourceStats } from '@/services/resourceService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface ResourceStats {
   foodSupply: {
@@ -27,10 +29,19 @@ const getResourceColor = (days: number, requiredDays: number): string => {
   if (days >= requiredDays) {
     return 'bg-green-500';
   }
+  // If we're within 2 days of the requirement, show warning
+  if (days >= requiredDays - 2) {
+    return 'bg-yellow-500';
+  }
+  // If we're within 4 days of the requirement, show orange
+  if (days >= requiredDays - 4) {
+    return 'bg-orange-500';
+  }
   return 'bg-red-500';
 };
 
 const ResourceSummary: React.FC = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<ResourceStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -113,7 +124,7 @@ const ResourceSummary: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      Liczba dni zapasu żywności (wymagane minimum: {stats.foodSupply.requiredDays} dni)
+                      Liczba dni zapasu żywności (wymagane: {stats.foodSupply.requiredDays} dni)
                     </p>
                     <div className="relative w-full h-8 bg-gray-200 rounded">
                       <div
@@ -148,11 +159,22 @@ const ResourceSummary: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col text-sm mt-2 gap-1">
-                      <span>
-                        Zasoby własne: {stats.foodSupply.ownResources} dni 
-                        {stats.foodSupply.ownResources >= stats.foodSupply.requiredDays ? '✓' : '⚠️'}
-                      </span>
+                    <div className="flex flex-col text-sm mt-4">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          Zasoby własne: {stats.foodSupply.ownResources} dni 
+                          {stats.foodSupply.ownResources >= stats.foodSupply.requiredDays ? '✓' : '⚠️'}
+                        </span>
+                        {stats.foodSupply.ownResources < stats.foodSupply.requiredDays && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => navigate('/orders')}
+                          >
+                            Przejdź do zamówień
+                          </Button>
+                        )}
+                      </div>
                       <span>Zasoby prywatne: {stats.foodSupply.privateResources} dni</span>
                     </div>
                   </div>

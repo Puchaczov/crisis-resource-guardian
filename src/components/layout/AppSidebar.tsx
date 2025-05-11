@@ -24,7 +24,8 @@ import {
   LayoutDashboard,
   MapPin,
   Info,
-  Bell
+  Bell,
+  ShoppingCart
 } from "lucide-react";
 
 const AppSidebar = () => {
@@ -115,13 +116,27 @@ const AppSidebar = () => {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <NavLink 
+                    to="/orders"
+                    className={({ isActive }) => 
+                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                    }
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    <span>Zamówienia</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink 
                     to="/alerts"
                     className={({ isActive }) => 
                       isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
                     }
                   >
                     <Bell className="h-4 w-4" />
-                    <span>Alerty</span>
+                    <span>Powiadomienia</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

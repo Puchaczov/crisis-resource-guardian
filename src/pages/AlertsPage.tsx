@@ -4,18 +4,18 @@ import { AlertTriangle, Bell, CheckCircle2, XCircle, X, Zap, Droplet, HeartPulse
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AlertSeverity, SystemAlert } from '@/types/alerts';
 import {
   getAllAlerts,
   dismissAlert,
   dismissAllAlerts,
-  SystemAlert,
-  AlertSeverity,
   getSeverityLabel,
   getSeverityColor,
   getCategoryStyle,
   getCategoryLabel
 } from '@/services/alertsService';
 import { ResourceCategory } from '@/types/resources';
+import { getAlertStyles } from '@/utils/alertStyles';
 
 const AlertsPage = () => {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
@@ -48,19 +48,20 @@ const AlertsPage = () => {
   };
 
   const getSeverityIcon = (severity: AlertSeverity) => {
+    const styles = getAlertStyles(severity);
     switch (severity) {
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-destructive" />;
+        return <XCircle className={`h-5 w-5 ${styles.text}`} />;
       case 'warning':
-        return <AlertCircle className="h-5 w-5 text-warning" />;
+        return <AlertTriangle className={`h-5 w-5 ${styles.text}`} />;
       case 'info':
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className={`h-5 w-5 ${styles.text}`} />;
     }
   };
 
   const getSeverityClass = (severity: AlertSeverity) => {
-    const style = getSeverityColor(severity);
-    return `${style.bg} ${style.text}`;
+    const styles = getAlertStyles(severity);
+    return styles.badge;
   };
 
   const getCategoryIcon = (category?: ResourceCategory) => {
@@ -82,9 +83,9 @@ const AlertsPage = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Alerty systemowe</h1>
+          <h1 className="text-2xl font-bold">Powiadomienia systemowe</h1>
           <p className="text-muted-foreground">
-            Monitorowanie alertów i powiadomień systemowych
+            Monitorowanie powiadomień systemowych
           </p>
         </div>
         {alerts.length > 0 && (
@@ -97,13 +98,13 @@ const AlertsPage = () => {
 
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
-          <p>Ładowanie alertów...</p>
+          <p>Ładowanie powiadomień...</p>
         </div>
       ) : alerts.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">Brak aktywnych alertów</p>
+            <p className="text-muted-foreground">Brak aktywnych powiadomień</p>
           </CardContent>
         </Card>
       ) : (

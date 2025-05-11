@@ -39,23 +39,37 @@ const AppHeader: React.FC<AppHeaderProps> = ({ user }) => {
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      const query = searchValue.trim();
-      const regex = /potrzebuję\s+(\d+)\s+(.*?)\s+w promieniu\s+(\d+)km/i;
-      const match = query.match(regex);
+      const originalQuery = searchValue.trim();
+      const query = originalQuery.toLowerCase(); // Normalize query to lowercase for matching
+
+      // Regex to find "łóżko" or "łóżek", optionally preceded by a number,
+      // and optionally followed by "zasięg" and a distance in km.
+      // Examples:
+      // "300 łóżek" -> quantity: "300", keyword: "łóżek", distance: undefined
+      // "łóżko" -> quantity: undefined, keyword: "łóżko", distance: undefined
+      // "łóżko zasięg 50km" -> quantity: undefined, keyword: "łóżko", distance: "50"
+      // "10 łóżek zasięg 100 km" -> quantity: "10", keyword: "łóżek", distance: "100"
+      // "10 łóżek, zasięg 100 km" -> quantity: "10", keyword: "łóżek", distance: "100"
+      const lozkoPattern = /^(?:(\d+)\s+)?(łóżko|łóżek)(?:,?\s+zasięg\s+(\d+)\s*km)?$/i;
+      const match = query.match(lozkoPattern);
 
       if (match) {
-        let resourceQuery = match[2].toLowerCase();
-        const distance = match[3];
+        // const quantity = match[1]; // Captured if needed, e.g., for a quantity filter
+        // const keyword = match[2]; // "łóżko" or "łóżek"
+        const distance = match[3]; // Captured distance, or undefined
 
-        let resourceSearchTerm = "";
-        if (resourceQuery === "łóżek") {
-          resourceSearchTerm = "Łóżka polowe";
+        const searchTerm = "Łóżka polowe";
+        
+        if (distance) {
+          navigate(`/map?search=${encodeURIComponent(searchTerm)}&distanceKm=${distance}`);
         } else {
-          resourceSearchTerm = resourceQuery;
+          navigate(`/map?search=${encodeURIComponent(searchTerm)}`);
         }
-
-        if (resourceSearchTerm && distance) {
-          navigate(`/map?search=${encodeURIComponent(resourceSearchTerm)}&distanceKm=${distance}`);
+      } else {
+        // If the specific "łóżko" pattern doesn't match, treat as a generic search.
+        // Use the original query to preserve casing for general search terms.
+        if (originalQuery) {
+          navigate(`/map?search=${encodeURIComponent(originalQuery)}`);
         }
       }
     }

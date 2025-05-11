@@ -102,6 +102,19 @@ const ResourceMap: React.FC = () => {
     return dParam ? parseInt(dParam, 10) : DEFAULT_DISTANCE_KM;
   });
 
+  // Effect to synchronize local filter state from URL searchParams
+  useEffect(() => {
+    setSearch(searchParams.get('search') || '');
+    setCategory(searchParams.get('category') || 'all');
+    setStatus(searchParams.get('status') || 'all');
+    setOrganization(searchParams.get('organization') || 'all');
+    
+    const dParam = searchParams.get('distanceKm');
+    const newDistanceKm = dParam ? parseInt(dParam, 10) : DEFAULT_DISTANCE_KM;
+    setDistanceKm(newDistanceKm);
+
+  }, [searchParams]); // Rerun when searchParams object changes
+
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('map');
   const [mapGeoJsonLayers, setMapGeoJsonLayers] = useState<any[]>([]);
@@ -181,11 +194,25 @@ const ResourceMap: React.FC = () => {
 
   // Effect for updating commune layers based on filtered resources
   useEffect(() => {
+    let isActive = true; // Flag to handle cleanup for this specific effect run
+
     const updateCommuneLayers = async () => {
-      if (isLoading) return;
+      if (isLoading) {
+        // If initial resources are still loading, wait.
+        // Layers will be updated once isLoading is false and filteredResources are set.
+        return;
+      }
+
+      // If effect is no longer active (component unmounted or deps changed), abort.
+      if (!isActive) {
+        return;
+      }
 
       if (filteredResources.length === 0) {
-        setMapGeoJsonLayers([]);
+        if (isActive) { // Check isActive before setting state
+          setMapGeoJsonLayers([]);
+          console.log('Cleared commune GeoJSON layers: filteredResources is empty.');
+        }
         return;
       }
 
@@ -199,9 +226,15 @@ const ResourceMap: React.FC = () => {
         const uniqueLocations = Array.from(uniqueLocationStrings).map(str => JSON.parse(str));
 
         if (uniqueLocations.length === 0) {
-          setMapGeoJsonLayers([]);
+          if (isActive) {
+            setMapGeoJsonLayers([]);
+            console.log('Cleared commune GeoJSON layers: uniqueLocations derived from filteredResources is empty.');
+          }
           return;
         }
+
+        // Check isActive before potentially long async operation
+        if (!isActive) return;
 
         const communesResponse = await fetch('http://127.0.0.1:8000/find_communes/', {
           method: 'POST',
@@ -209,14 +242,18 @@ const ResourceMap: React.FC = () => {
           body: JSON.stringify(uniqueLocations)
         });
 
+        if (!isActive) return; // Check after await
+
         if (!communesResponse.ok) {
           console.error(`HTTP error! status: ${communesResponse.status} for /find_communes/`);
-          setMapGeoJsonLayers([]);
+          if (isActive) setMapGeoJsonLayers([]);
           return;
         }
         
         const communeApiResults: { input_coordinate: { lat: number; lon: number }; commune_name: string; status: string }[] = await communesResponse.json();
         
+        if (!isActive) return; // Check after await
+
         const foundCommuneNames = communeApiResults
           .filter(result => result.status === 'found' && result.commune_name)
           .map(result => result.commune_name);
@@ -224,53 +261,108 @@ const ResourceMap: React.FC = () => {
         const uniqueCommuneNames = [...new Set(foundCommuneNames)];
 
         if (uniqueCommuneNames.length === 0) {
-          setMapGeoJsonLayers([]);
+          if (isActive) {
+            setMapGeoJsonLayers([]);
+            console.log('Cleared commune GeoJSON layers: no unique commune names found from API.');
+          }
           return;
         }
 
         const communeShapefilePromises = uniqueCommuneNames.map(async (name) => {
-          const shapefilePath = `/files/gminy_JPT_NAZWA__${name}.shp`;
-          const dbfFilePath = `/files/gminy_JPT_NAZWA__${name}.dbf`;
+          const formattedName = name.replace(/ /g, "_"); // Replace spaces with underscores
+          const shapefilePath = `/files/gminy_JPT_NAZWA__${formattedName}.shp`;
+          const dbfFilePath = `/files/gminy_JPT_NAZWA__${formattedName}.dbf`;
           try {
+            // Check isActive before starting fetch, though less critical here as Promise.all handles concurrent starts
+            if (!isActive) return null;
+
             const [shpResponse, dbfResponse] = await Promise.all([
               fetch(shapefilePath),
               fetch(dbfFilePath)
             ]);
+            
+            // Check isActive after fetches complete
+            if (!isActive) return null;
 
-            if (!shpResponse.ok || !dbfResponse.ok) {
-              console.warn(`SHP or DBF file for commune ${name} not found or error. SHP: ${shpResponse.status}, DBF: ${dbfResponse.status}`);
+            if (!shpResponse.ok) {
+              console.warn(`Error fetching SHP file for commune ${name} (path: ${shapefilePath}): ${shpResponse.status} ${shpResponse.statusText}.`);
+              return null;
+            }
+            const shpContentType = shpResponse.headers.get('content-type');
+            if (shpContentType && shpContentType.toLowerCase().includes('text/html')) {
+              console.warn(`Fetched SHP for commune ${name} (path: ${shapefilePath}) but received HTML content-type. File likely not found.`);
+              return null;
+            }
+
+            if (!dbfResponse.ok) {
+              console.warn(`Error fetching DBF file for commune ${name} (path: ${dbfFilePath}): ${dbfResponse.status} ${dbfResponse.statusText}.`);
+              return null;
+            }
+            const dbfContentType = dbfResponse.headers.get('content-type');
+            if (dbfContentType && dbfContentType.toLowerCase().includes('text/html')) {
+              console.warn(`Fetched DBF for commune ${name} (path: ${dbfFilePath}) but received HTML content-type. File likely not found.`);
               return null;
             }
 
             const shpBuffer = await shpResponse.arrayBuffer();
             const dbfBuffer = await dbfResponse.arrayBuffer();
             
-            const features = parseShp(shpBuffer);
-            const attributes = (parseDbf as any)(dbfBuffer, 'UTF-8'); 
-            const geojson = combine([features, attributes]);
+            if (!isActive) return null; // Check before parsing
+
+            let features, attributes, geojson;
+            try {
+              features = parseShp(shpBuffer);
+            } catch (e: any) {
+              console.error(`Error parsing SHP for commune ${name} (path: ${shapefilePath}):`, e.message, e.stack);
+              return null;
+            }
+            try {
+              attributes = (parseDbf as any)(dbfBuffer, 'UTF-8'); 
+            } catch (e: any) {
+              console.error(`Error parsing DBF for commune ${name} (path: ${dbfFilePath}):`, e.message, e.stack);
+              return null;
+            }
+            try {
+              geojson = combine([features, attributes]);
+            } catch (e: any) {
+              console.error(`Error combining SHP and DBF for commune ${name} (paths: ${shapefilePath}, ${dbfFilePath}):`, e.message, e.stack);
+              return null;
+            }
             
             const sourceProjection = 'EPSG:2180'; 
             const targetProjection = 'EPSG:4326';
             const reprojectedGeoJson = reproject(geojson, sourceProjection, targetProjection, proj4.defs);
             return reprojectedGeoJson;
-          } catch (error) {
-            console.error(`Error loading, parsing, or reprojecting shapefile/dbf for commune ${name}:`, error);
+          } catch (error: any) {
+            console.error(`Generic error loading, parsing, or reprojecting shapefile/dbf for commune ${name} (paths: ${shapefilePath}, ${dbfFilePath}):`, error.message, error.stack);
             return null;
           }
         });
 
-        const newCommuneGeoJsonLayers = (await Promise.all(communeShapefilePromises)).filter(Boolean);
+        if (!isActive) return; // Check before Promise.all resolves
+
+        const newCommuneGeoJsonLayers = (await Promise.all(communeShapefilePromises)).filter(layer => isActive && layer !== null);
         
-        setMapGeoJsonLayers(newCommuneGeoJsonLayers);
-        console.log('Updated commune GeoJSON layers (count):', newCommuneGeoJsonLayers.length);
+        if (isActive) { // Final check before setting state
+          setMapGeoJsonLayers(newCommuneGeoJsonLayers);
+          console.log('Updated commune GeoJSON layers (count):', newCommuneGeoJsonLayers.length);
+        }
 
       } catch (error) {
         console.error("Error updating commune layers based on filtered resources:", error);
-        setMapGeoJsonLayers([]);
+        if (isActive) { // Only set state if still active
+          setMapGeoJsonLayers([]);
+          console.log('Cleared commune GeoJSON layers due to an error in updateCommuneLayers.');
+        }
       }
     };
 
     updateCommuneLayers();
+
+    return () => {
+      isActive = false; // Cleanup function: marks this effect run as no longer active
+      console.log('Commune layer effect cleanup, isActive set to false.');
+    };
   }, [filteredResources, isLoading]);
 
   const centralPoint = useMemo(() => L.latLng(CENTRAL_FIXED_POINT_LAT, CENTRAL_FIXED_POINT_LNG), []);
@@ -333,8 +425,12 @@ const ResourceMap: React.FC = () => {
     } else {
       params.delete('distanceKm');
     }
-    setSearchParams(params, { replace: true });
-  }, [search, category, status, organization, distanceKm, setSearchParams]);
+    // Only call setSearchParams if the string representation of params has changed
+    // to avoid potential loops if searchParams itself is a dependency (which it is implicitly via useSearchParams)
+    if (params.toString() !== searchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [search, category, status, organization, distanceKm, setSearchParams, searchParams]); // Added searchParams here for the comparison
 
   useEffect(() => {
     setFilteredResources(resources.filter((resource) => {

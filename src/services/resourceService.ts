@@ -255,6 +255,71 @@ const mockResources: Resource[] = [
       battery: 100,
       lastSignal: "2023-05-05T11:25:00Z"
     }
+  },
+  // Adding camp beds in Warsaw
+  {
+    id: "warsaw-camp-beds-1",
+    name: "Łóżka polowe",
+    description: "Standardowe łóżka polowe, metalowa rama, z materacem.",
+    quantity: 250,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Magazyn Obrony Cywilnej Warszawa - Praga",
+      address: "ul. Targowa 74, 03-700 Warszawa",
+      coordinates: { lat: 52.2497, lng: 21.0358 } // Praga Północ
+    },
+    organization: "Magazyn Obrony Cywilnej",
+    lastUpdated: "2025-05-10T09:00:00Z"
+  },
+  {
+    id: "warsaw-camp-beds-2",
+    name: "Łóżka polowe",
+    description: "Łóżka polowe dla dzieci, mniejsze rozmiary.",
+    quantity: 80,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Szkoła Podstawowa nr 10, Warszawa - Mokotów (punkt ewakuacyjny)",
+      address: "ul. Woronicza 8, 02-640 Warszawa",
+      coordinates: { lat: 52.1939, lng: 21.0071 } // Mokotów
+    },
+    organization: "Urząd Dzielnicy Mokotów",
+    lastUpdated: "2025-05-09T14:30:00Z"
+  },
+  {
+    id: "warsaw-camp-beds-3",
+    name: "Łóżka polowe",
+    description: "Łóżka polowe wzmocnione, dla osób o większej masie ciała.",
+    quantity: 50,
+    unit: "szt",
+    category: "shelter",
+    status: "reserved",
+    location: {
+      name: "Hala Sportowa \"Koło\" - OSiR Wola",
+      address: "ul. Obozowa 60, 01-423 Warszawa",
+      coordinates: { lat: 52.2401, lng: 20.9448 } // Wola
+    },
+    organization: "OSiR Wola",
+    lastUpdated: "2025-05-11T10:15:00Z"
+  },
+  {
+    id: "warsaw-camp-beds-4",
+    name: "Łóżka polowe",
+    description: "Składane łóżka polowe z kocami termicznymi.",
+    quantity: 120,
+    unit: "szt",
+    category: "shelter",
+    status: "available",
+    location: {
+      name: "Magazyn PCK Warszawa - Centrum",
+      address: "ul. Mokotowska 14, 00-561 Warszawa", // Near PCK HQ
+      coordinates: { lat: 52.2245, lng: 21.0190 } // Śródmieście
+    },
+    organization: "PCK Warszawa",
+    lastUpdated: "2025-05-08T11:00:00Z"
   }
 ];
 
@@ -1252,26 +1317,28 @@ export const resourceOrganizations: { value: string; label: string }[] = [
   { value: 'CSRG S.A.', label: 'CSRG S.A.' },
   { value: 'Ministerstwo Zdrowia', label: 'Ministerstwo Zdrowia' },
   { value: 'Straż Graniczna', label: 'Straż Graniczna' },
-  { value: 'Morska Służba Poszukiwania i Ratownictwa', label: 'Morska Służba Poszukiwania i Ratownictwa' },
-  { value: 'PKN Orlen', label: 'PKN Orlen' },
-  { value: 'Urząd Marszałkowski Województwa Podkarpackiego', label: 'Urząd Marszałkowski Województwa Podkarpackiego' },
-  { value: 'Poczta Polska', label: 'Poczta Polska' },
-  { value: 'Urząd Miasta Poznań', label: 'Urząd Miasta Poznań' },
-  { value: 'Urząd Miasta Łódź', label: 'Urząd Miasta Łódź' },
   { value: 'Urząd Miasta Białystok', label: 'Urząd Miasta Białystok' },
+  { value: 'Morska Służba Poszukiwania i Ratownictwa', label: 'Morska Służba Poszukiwania i Ratownictwa' },
   { value: 'Urząd Miasta Gdynia', label: 'Urząd Miasta Gdynia' },
+  { value: 'PKN Orlen', label: 'PKN Orlen' },
   { value: 'Urząd Miasta Toruń', label: 'Urząd Miasta Toruń' },
+  { value: 'Urząd Marszałkowski Województwa Podkarpackiego', label: 'Urząd Marszałkowski Województwa Podkarpackiego' },
   { value: 'Urząd Miasta Olsztyn', label: 'Urząd Miasta Olsztyn' },
+  { value: 'Poczta Polska', label: 'Poczta Polska' },
   { value: 'OSP Warszawa-Wesoła', label: 'OSP Warszawa-Wesoła' },
   { value: 'Rządowe Centrum Bezpieczeństwa', label: 'Rządowe Centrum Bezpieczeństwa' },
   { value: 'Wolontariat Miejski Kraków', label: 'Wolontariat Miejski Kraków' },
   { value: 'GOPR', label: 'GOPR' },
-  { value: 'PCK Poznań', label: 'PCK Poznań' },
+  { value: 'Magazyn Obrony Cywilnej Poznań', label: 'Magazyn Obrony Cywilnej Poznań' },
   { value: 'Magazyn Rezerw Strategicznych Wrocław', label: 'Magazyn Rezerw Strategicznych Wrocław' },
   { value: 'Urząd Miasta Łodzi - Wydział Zarządzania Kryzysowego', label: 'Urząd Miasta Łodzi - Wydział Zarządzania Kryzysowego' },
   { value: 'PCK Szczecin', label: 'PCK Szczecin' },
   { value: 'Magazyn Obrony Cywilnej Lublin', label: 'Magazyn Obrony Cywilnej Lublin' },
-  { value: 'PCK Bydgoszcz', label: 'PCK Bydgoszcz' }
+  { value: 'PCK Bydgoszcz', label: 'PCK Bydgoszcz' },
+  { value: 'Magazyn Obrony Cywilnej', label: 'Magazyn Obrony Cywilnej' },
+  { value: 'Urząd Dzielnicy Mokotów', label: 'Urząd Dzielnicy Mokotów' },
+  { value: 'OSiR Wola', label: 'OSiR Wola' },
+  { value: 'PCK Warszawa', label: 'PCK Warszawa' }
 ];
 
 export const getResourceStats = async () => {

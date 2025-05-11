@@ -36,17 +36,20 @@
             {
               "resource_name": "Pojazdy transportu zbiorowego (autobusy, busy)",
               "quantity_needed": 15,
-              "resource_type": "Transport"
+              "resource_type": "Transport",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Personel OSP i Policji",
               "quantity_needed": 40,
-              "resource_type": "Zasoby ludzkie"
+              "resource_type": "Zasoby ludzkie",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Tymczasowe miejsca zakwaterowania",
               "quantity_needed": 5,
-              "resource_type": "Infrastruktura"
+              "resource_type": "Infrastruktura",
+              "resource_interaction_status": null
             }
           ]
         },
@@ -82,12 +85,14 @@
             {
               "resource_name": "Stanowiska komputerowe z łącznością",
               "quantity_needed": 6,
-              "resource_type": "Technologia"
+              "resource_type": "Technologia",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Zapasowy agregat prądotwórczy",
               "quantity_needed": 1,
-              "resource_type": "Sprzęt awaryjny"
+              "resource_type": "Sprzęt awaryjny",
+              "resource_interaction_status": null
             }
           ]
         }
@@ -129,17 +134,20 @@
             {
               "resource_name": "Środki ochrony osobistej (kombinezony, maski)",
               "quantity_needed": 50,
-              "resource_type": "Sprzęt ochronny"
+              "resource_type": "Sprzęt ochronny",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Zespoły ratunkowe z odpowiednim sprzętem do neutralizacji substancji chemicznych",
               "quantity_needed": 10,
-              "resource_type": "Zasoby ludzkie"
+              "resource_type": "Zasoby ludzkie",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Pojazdy transportu ratunkowego",
               "quantity_needed": 5,
-              "resource_type": "Transport"
+              "resource_type": "Transport",
+              "resource_interaction_status": null
             }
           ]
         },
@@ -172,17 +180,20 @@
             {
               "resource_name": "Łóżka i namoty do ewakuacji",
               "quantity_needed": 1000,
-              "resource_type": "Transport"
+              "resource_type": "Transport",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Pojazdy transportowe do dostarczania wody",
               "quantity_needed": 6,
-              "resource_type": "Transport"
+              "resource_type": "Transport",
+              "resource_interaction_status": null
             },
             {
               "resource_name": "Punkty dystrybucji wody",
               "quantity_needed": 5,
-              "resource_type": "Infrastruktura"
+              "resource_type": "Infrastruktura",
+              "resource_interaction_status": null
             }
           ]
         }

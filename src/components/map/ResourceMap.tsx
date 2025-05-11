@@ -90,9 +90,9 @@ const CENTRAL_FIXED_POINT_LAT = 52.2297;
 const CENTRAL_FIXED_POINT_LNG = 21.0122;
 
 const ResourceMap: React.FC = () => {
-  const [resources, setResources] = useState<(Resource & { communeName?: string })[]>([]);
-  const [filteredResources, setFilteredResources] = useState<(Resource & { communeName?: string })[]>([]);
-  const [selectedResource, setSelectedResource] = useState<(Resource & { communeName?: string }) | null>(null);
+  const [resources, setResources] = useState<(Resource & { communeName?: string; resource_interaction_status?: 'allocated' | 'requested' | null })[]>([]);
+  const [filteredResources, setFilteredResources] = useState<(Resource & { communeName?: string; resource_interaction_status?: 'allocated' | 'requested' | null })[]>([]);
+  const [selectedResource, setSelectedResource] = useState<(Resource & { communeName?: string; resource_interaction_status?: 'allocated' | 'requested' | null }) | null>(null);
   
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -497,7 +497,7 @@ const ResourceMap: React.FC = () => {
     }
   }, [filteredResources, mapInstance]);
 
-  const handleResourceClick = (resource: (Resource & { communeName?: string }) | null) => {
+  const handleResourceClick = (resource: (Resource & { communeName?: string; resource_interaction_status?: 'allocated' | 'requested' | null }) | null) => {
     setSelectedResource(resource);
     if (resource && mapInstance) {
       mapInstance.flyTo([resource.location.coordinates.lat, resource.location.coordinates.lng], 14);
@@ -515,6 +515,20 @@ const ResourceMap: React.FC = () => {
   const handleDistanceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newDistance = parseInt(event.target.value, 10);
     setDistanceKm(Math.max(MIN_DISTANCE_KM, Math.min(MAX_DISTANCE_KM, newDistance)));
+  };
+
+  const handleResourceInteraction = (resourceId: string, isForLocalCommune: boolean) => {
+    setResources(prevResources =>
+      prevResources.map(res => {
+        if (res.id === resourceId) {
+          return {
+            ...res,
+            resource_interaction_status: isForLocalCommune ? 'allocated' : 'requested',
+          };
+        }
+        return res;
+      })
+    );
   };
 
   const localCommuneName = commune.name;
@@ -542,7 +556,7 @@ const ResourceMap: React.FC = () => {
       }),
   [filteredResources, localCommuneName, centralPoint]);
 
-  const renderResourceTable = (title: string, data: (Resource & { communeName?: string })[], showCommuneCol: boolean) => {
+  const renderResourceTable = (title: string, data: (Resource & { communeName?: string; resource_interaction_status?: 'allocated' | 'requested' | null })[], showCommuneCol: boolean) => {
     if (data.length === 0) {
       return null;
     }
@@ -559,23 +573,57 @@ const ResourceMap: React.FC = () => {
                 <TableHead className="py-2 px-3">Ilość</TableHead>
                 <TableHead className="py-2 px-3">Organizacja</TableHead>
                 {showCommuneCol && <TableHead className="py-2 px-3">Gmina</TableHead>}
+                <TableHead className="py-2 px-3 text-right">Akcje</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map(r => (
-                <TableRow key={r.id} onClick={() => handleResourceClick(r)} className="cursor-pointer hover:bg-gray-50">
-                  <TableCell className="font-medium py-2 px-3">{r.name}</TableCell>
-                  <TableCell className="py-2 px-3">{getCategoryLabel(r.category as any)}</TableCell>
-                  <TableCell className="py-2 px-3">
-                    <Badge variant={getBadgeVariantForStatus(r.status as ResourceStatus)} className="text-xs px-1.5 py-0.5">
-                      {getStatusLabel(r.status as ResourceStatus)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-2 px-3">{r.quantity} {r.unit}</TableCell>
-                  <TableCell className="py-2 px-3">{r.organization}</TableCell>
-                  {showCommuneCol && <TableCell className="py-2 px-3">{r.communeName || 'N/A'}</TableCell>}
-                </TableRow>
-              ))}
+              {data.map(r => {
+                const isLocal = !showCommuneCol;
+                let actionButton;
+
+                if (r.resource_interaction_status === 'allocated') {
+                  actionButton = (
+                    <Button size="sm" variant="outline" disabled className="text-green-600 border-green-600">
+                      Przydzielono
+                    </Button>
+                  );
+                } else if (r.resource_interaction_status === 'requested') {
+                  actionButton = (
+                    <Button size="sm" variant="outline" disabled className="text-orange-500 border-orange-500">
+                      Wysłano prośbę
+                    </Button>
+                  );
+                } else {
+                  actionButton = (
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click
+                        handleResourceInteraction(r.id, isLocal);
+                      }}
+                    >
+                      {isLocal ? "Przydziel" : "Poproś o przydział"}
+                    </Button>
+                  );
+                }
+
+                return (
+                  <TableRow key={r.id} onClick={() => handleResourceClick(r)} className="cursor-pointer hover:bg-gray-50">
+                    <TableCell className="font-medium py-2 px-3">{r.name}</TableCell>
+                    <TableCell className="py-2 px-3">{getCategoryLabel(r.category as any)}</TableCell>
+                    <TableCell className="py-2 px-3">
+                      <Badge variant={getBadgeVariantForStatus(r.status as ResourceStatus)} className="text-xs px-1.5 py-0.5">
+                        {getStatusLabel(r.status as ResourceStatus)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-2 px-3">{r.quantity} {r.unit}</TableCell>
+                    <TableCell className="py-2 px-3">{r.organization}</TableCell>
+                    {showCommuneCol && <TableCell className="py-2 px-3">{r.communeName || 'N/A'}</TableCell>}
+                    <TableCell className="py-2 px-3 text-right">{actionButton}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
